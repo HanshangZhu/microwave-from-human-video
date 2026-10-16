@@ -9,7 +9,8 @@ nothing privileged. It succeeds **83 %** on a plain grey floor (128 unseen start
 and **77 %** with both cameras looking at a **3D Gaussian-splat reconstruction of my
 kitchen** instead -- the table, chairs and room it never saw in training, with the robot,
 microwave and pot rendered by the simulator in front of it (not a significant drop: 21 / 13
-discordant, p = 0.23). Nothing here has run on a real robot.
+discordant, p = 0.23). The same keyframes from the takes also drive a Unitree G1 upper
+body through the task, scripted, not learned (below). Nothing here has run on a real robot.
 
 | human take (left) vs. simulation rendered from the same camera (right) |
 |---|
