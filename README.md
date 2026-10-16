@@ -87,22 +87,11 @@ up 14 points there and holds in rooms it never saw.
 
 ## Method
 
-```mermaid
-flowchart TD
-  H[Human demonstrations<br/>3 RGB-D takes, one fixed RealSense] --> K[Per-frame extraction<br/>door angle, pot pick / place, hand path]
-  K --> C[Trajectory constraints<br/>the take's keyframes]
-  S[Digital-twin scanning<br/>RealSense sweeps: microwave, pot, room] --> P[Pi3X poses + fused depth<br/>dense cloud, RGB frames]
-  M[Real-world measurements<br/>tape and calipers] --> T
-  P --> T[Digital-twin assets<br/>measured URDF + scanned colours; pot mesh]
-  C --> Q[Panda solver<br/>IK along Cartesian paths, executed in physics]
-  T --> Q
-  Q --> D[Sim trajectories + RGB<br/>96 demos, DART noise, cameras at the real pose]
-  D --> R[DoorMan-style domain randomisation<br/>two random scenes per demo]
-  R --> N[Camera policy<br/>ResNet-18 + DiT, action chunks]
-  N --> E[Evaluation: 128 unseen starts<br/>grey floor / scanned mesh / Gaussian-splat room]
-  P --> G[Gaussian splat of the room<br/>microwave painted out, poses refined] --> E
-  H -. same keyframes .-> U[Unitree G1, scripted] --> E
-```
+![method](docs/media/method.png)
+
+Blue: the human data. Green: the digital twin. Amber: simulation and learning. Grey: the
+exam. The human video contributes the task's keyframes and the camera; the simulator
+contributes the motion; the room enters only at evaluation.
 
 Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room -> splat),
 `sim/` (environment, solver, data generation, rendering, policy, splat compositing),
