@@ -36,6 +36,7 @@ import torch.nn as nn
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "sim"))      # bc.py, dit.py: the state-policy definitions dit_vis.py also builds on
 import sim.microwave_env as M  # noqa: E402
 from dit import DiT, E, N_OBS  # noqa: E402
 

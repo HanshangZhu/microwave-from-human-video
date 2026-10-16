@@ -37,6 +37,7 @@ import torch.nn as nn
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "sim"))      # bc.py, dit.py: the state-policy definitions dit_vis.py also builds on
 from rl_residual import POT_REGION, T_EP, Base, Residual, Tracker, summarize  # noqa: E402
 
 HANDLE_DOOR = np.array([0.343, -0.062, 0.17])         # grasp point on the bar, door frame
