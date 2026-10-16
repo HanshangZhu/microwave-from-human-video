@@ -1,4 +1,4 @@
-# Simulation experiments: log (last update 2026-10-16 13:30)
+# Simulation experiments: log (last update 2026-10-16 18:30)
 
 Everything after the human takes: robot demonstrations, policies, RL. One section per
 experiment, newest results last. RL is **not finished**; its sections record runs and
@@ -588,6 +588,62 @@ Results (desktop, paired vs v6-long 83 / 81 %):
 - Unexplained: 205 x 1 (38 %) is far below 96 x 1 (64 %) though the new demos look like the
   old and work with two scenes. Run-to-run (training seed) variance has never been measured
   here; every arm is one training run.
+
+### 7e. The kitchen as a Gaussian splat (16 Oct, afternoon)
+
+Goal: a background that looks like the room, for the evaluation and the demo video. Code:
+`recon/sweep_dense.py`, `gs_inpaint.py`, `gs_kitchen.py`, `gs_server.py`; `sim/gs_cams.py`,
+`gs_client.py`, `gs_demo.py`; `dit_vis.py eval --real-bg <render>.npz [--splat-wrist <ckpt>]`.
+
+Reconstruction (gsplat 1.5.3, colour L1 + SSIM + 0.2 x RealSense depth L1, init from
+Pi3X's dense cloud of the sweep, every view in the microwave frame via the sweep's
+registration; take_000's rest frame from the front camera is one training view, its pose
+fixed). Held-out PSNR on 8 of the 60 sparse frames (every 8th), each view's pose aligned to
+the frozen splat first (300 steps; without it a pose-refined splat is scored against poses
+it moved away from):
+
+| splat | train PSNR | held-out, as posed | held-out, pose-aligned |
+|---|---|---|---|
+| 60 frames, 10 k steps | 29.3 | 23.8 | -- |
+| 60 frames, 30 k steps | 32.2 | 24.0 | 24.7 |
+| 60 frames + pose refinement, 20 k | 32.2 | 22.0 | 25.6 |
+| 300 frames + pose refinement, 20 k | 28.9 | 21.6 | **26.5** |
+
+More steps fit the training views and not the held-out ones (10 k -> 30 k: +3.0 / +0.2 dB):
+coverage-limited, not undertrained. The 240 extra frames were posed in batches of 16 with
+the 24 sparse frames nearest in time as anchors (residual at the anchors 0.4-2.4 cm median,
+0.4-4.5 deg); Pi3X's chunked long-sequence mode over all 300 drifted (18 cm / 27 deg
+median at the 60 shared cameras) and was not used.
+
+The microwave: the simulator draws its own (its door opens), so the splat must not have one.
+Deleting the Gaussians in its box after training left a hole with floaters around it; it is
+painted out of every training image instead (LaMa; mask = its box projected at each frame's
+pose, dilated 12-18 px). LaMa rather than a diffusion inpainter: fills that agree across views.
+
+Evaluation, v6-long, same 128 starts, paired with the grey floor (106 / 128):
+
+| front background | wrist | success | vs grey (discordant, p) | never lifted |
+|---|---|---|---|---|
+| grey floor | sim | 106 (83 %) | -- | 15 |
+| real photo (take_000 rest frame), front only | sim | 94 (73 %) | 23 / 11, 0.058 | 28 |
+| **splat, 300 frames, nothing deleted** | sim | **80 (62 %)** | 34 / 8, 0.0001 | 40 |
+| **splat, front and wrist** (wrist rendered every step, `--splat-wrist`) | splat | **98 (77 %)** | 21 / 13, 0.23 | 22 |
+
+Three earlier splat evaluations are void: the render deleted the Gaussians inside the
+microwave's box and above the counter's workspace, but the front view is seen by one camera
+without depth, so part of what explains it floats inside those boxes -- deleting them
+uncovered junk right where the pot is picked (60 frames, deleted after training: 84 / 128;
+60 frames LaMa: 76; 300 frames LaMa: 51). With nothing deleted the front render matches its
+(painted-out) training frame to 3 / 255 mean.
+
+Front + wrist vs front only: 26 / 8 discordant, p = 0.003. Reading: the room's look costs
+little (77 vs 83 %, n.s.); what cost 21 points was the two cameras disagreeing -- a real-
+looking room in front, the grey grid floor at the wrist -- where training always showed
+both cameras the same randomised scene. (The real-photo front-only run, 73 %, has the same
+mismatch.) Before the wrist run I read the front-only 62 % as "the more realistic the
+background, the worse"; that was wrong. The wrist renders' empty directions (the ceiling)
+are filled light grey (`gs_kitchen.EMPTY`); black fill reached 13 % of wrist pixels and was
+replaced before this run. One training seed, one splat, one evaluation.
 
 ## 8. Human-guided robot demonstrations: the hand where it was seen (`human_paths.py`)
 

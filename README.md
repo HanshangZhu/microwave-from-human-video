@@ -5,42 +5,58 @@ microwave become a robot (Franka Panda) doing the same task in a physics simulat
 that microwave and that pot. A scripted solver turns the videos' object keyframes into
 robot demonstrations, and a **camera-based policy** trained on them runs closed-loop from
 pot positions it has not seen. It sees two camera images and the robot's own joints, and
-nothing privileged. It succeeds **83 %** on a plain grey floor and **74 %** in front of a
-background it never saw in training, a mesh scan of the room rendered with its colours
-(128 start states each). That scan is a poor reconstruction of the room (below), so this
-shows robustness to an unseen, noisy background, not to my real kitchen.
+nothing privileged. It succeeds **83 %** on a plain grey floor (128 unseen start states),
+and **77 %** with both cameras looking at a **3D Gaussian-splat reconstruction of my
+kitchen** instead -- the table, chairs and room it never saw in training, with the robot,
+microwave and pot rendered by the simulator in front of it (not a significant drop: 21 / 13
+discordant, p = 0.23). Nothing here has run on a real robot.
 
 | human take (left) vs. simulation rendered from the same camera (right) |
 |---|
 | ![replay](docs/media/take0_replay.gif) |
 
-| robot, solved from take 0 | camera policy (v6-long), scanned-room backdrop, unseen pot position |
+| robot, solved from take 0 | camera policy (v6-long) in the splatted kitchen, unseen pot position |
 |---|---|
-| ![solver](docs/media/solver_take0.gif) | ![camera policy](docs/media/camera_policy_kitchen.gif) |
+| ![solver](docs/media/solver_take0.gif) | ![camera policy](docs/media/policy_splat_kitchen.gif) |
 
-Right: a third-person view (not a policy input), 14x speed; the policy sees the front
-RealSense view and the wrist camera. This backdrop is the uncoloured version (see below).
-One of the first 8 starts, all 8 of which succeeded; over 128 starts it is 81 %.
+Right: a novel view of the splatted kitchen (not a policy input), 8x speed, with the policy's
+two inputs beside it: the front and wrist cameras, each the splat (rendered from the camera's
+pose every step) with the simulated objects drawn over it. A 1080p version with a second view: [`docs/media/policy_splat_kitchen_1080p.mp4`](docs/media/policy_splat_kitchen_1080p.mp4).
+This start succeeds; over the 128 starts, 77 %.
 
-How far the scanned backdrop is from the real room, from the policy's own front camera
-(top: a real frame of take_000; bottom: the backdrop, rendered from the same registered
-camera pose):
+What the front camera sees, from the pose registered for the real camera:
 
-![real vs scanned backdrop](docs/media/real_vs_backdrop.png)
+![front views](docs/media/front_views.png)
 
-The real table is a smooth grey board with yellow wooden chairs around it; in the backdrop
-it is a speckled, near-white surface, the chairs scattered orange points, with no geometry
-beyond them (grey in the policy's view, black in the third-person view). The speckles are
-my own cropping, found on the last day: `recon/kitchen_backdrop.py` removed everything more
-than 1.5 cm above the counter in the workspace, and the scanned counter is +-1-2 cm rough,
-so the cut punched holes through which the renderer's grey clear colour shows; the
-simulator's lights also re-light colours that already contain the room's light (counter
-~155 / 255 in the scan, ~189 rendered). `--cut-z 0.04 --flatten 0.03` and
-`backdrop_colours.py ... gain=0.8` fix both; nothing below was re-evaluated with the fix. Until 16 Oct the backdrop was also rendered without its scanned
-colours: SAPIEN ignores vertex colours (`recon/backdrop_colours.py` fixes that). The
-colours matter: v6-long on the Jetson Thor, paired on the same 128 starts, succeeds 86 %
-with the uncoloured backdrop and **74 %** with the coloured one (19 / 4 discordant,
-p = 0.003). The table below is uncoloured throughout, as all those runs were.
+**The splatted kitchen** (`recon/sweep_dense.py`, `gs_inpaint.py`, `gs_kitchen.py`;
+`sim/gs_cams.py`, `gs_demo.py`, `dit_vis.py eval --real-bg <render>.npz`):
+300 frames of a 40 s RealSense sweep of the room, posed by Pi3X in batches anchored to a
+60-frame global solution (its chunked long-sequence mode drifted 18 cm / 27 deg), plus
+take_000's last frame from the front camera itself; the microwave painted out of every
+frame with LaMa (masks: its known box projected at each frame's pose); a gsplat 3DGS trained
+on them (colour + RealSense depth loss, every frame's pose refined, the front camera's held
+fixed as the registration). Held-out views: 24.7 dB PSNR from 60 frames, 26.5 dB from 300
+with pose refinement. The splat is rendered for each camera's pose (once for the static
+front camera, every step for the wrist camera, in a separate process: gsplat and the
+simulator need different torch versions) and the simulator's objects are drawn over it by
+segmentation.
+
+| background (v6-long, same 128 starts) | success | vs grey floor (discordant, p) |
+|---|---|---|
+| grey floor (the kind of floor it was trained on) | 83 % | -- |
+| scanned mesh of the room, uncoloured | 81 % | 14 / 12, p = 0.85 |
+| scanned mesh of the room, coloured (Jetson Thor run: 86 % -> 74 %) | -- | -- |
+| 3D Gaussian splat of the room, front camera only (wrist: grey floor) | 62 % | 34 / 8, p = 0.0001 |
+| **3D Gaussian splat of the room, both cameras** | **77 %** | 21 / 13, p = 0.23 |
+
+With the room behind both cameras the policy keeps most of its grey-floor success. With it
+behind the front camera only, it loses 21 points -- 40 of 128 episodes never lift the pot
+(15 on the grey floor) -- and the both-cameras run beats that front-only one 26 / 8
+(p = 0.003). So what hurt was the two cameras disagreeing about the scene (in training, both
+always see the same randomised scene), not the room's look; the front-only 62 % had first
+looked like "the more realistic, the worse", until the wrist camera was added. One training seed, one
+splat. The scanned-mesh "kitchen" is a noisy scan (speckled near-white table, chairs as
+scattered points, partly my own cropping -- `sim/EXPERIMENTS.md` 7d).
 
 Task, in order: open the door by its pull handle, pick the pot up from the counter, put it
 on the turntable, shut the door. Success = the pot inside on the turntable **and** the
@@ -69,8 +85,8 @@ directly (paired McNemar tests in `sim/EXPERIMENTS.md`):
 | **v6-long: v6 trained 102 k steps (submitted policy)** | same | **83 %** | **81 %** |
 
 v4 is the best policy in the scene it was trained in and useless outside it. v6-long
-gives up 14 points there and holds in a background it never saw (74 % once that
-background has its colours, measured on the Thor).
+gives up 14 points there and holds in backgrounds it never saw: 81 % in the noisy scanned
+mesh, 77 % in the splatted room (above).
 
 ## The pipeline
 
@@ -211,9 +227,11 @@ real scenes. This setup cannot show that, and I do not claim it.
 - The pot's start region is the one the three takes span (10 x 14 cm). Tested with v4:
   47 % success within 2.5 cm beyond its edge, 0 % beyond 5 cm; with the pot on top of the
   microwave the door is never even opened (0 / 48). v6-long was not tested outside it.
-- The "kitchen" test is a noisy mesh scan, not the real room: the smooth grey table comes
-  out speckled white (holes from my own crop, see above), the chairs as scattered points,
-  and there is nothing beyond them.
+- The splatted kitchen is the room's look, not a real image: the robot, microwave and pot
+  are rendered by the simulator over it, with no shadows on the real table, and the splat
+  is blurry close up (the wrist camera's view) and where the sweep did not look (novel
+  views: 26.5 dB held-out PSNR; the ceiling is a flat light grey). The scanned-mesh "kitchen" (81 %) is a noisy scan: the
+  table comes out speckled white (holes from my own crop), the chairs as scattered points.
   No claim is made about real images.
 - Hinge friction / damping and the pot's mass are set, not measured.
 - Rollouts are not bit-identical across machines (x86 vs aarch64 PhysX). Every comparison
@@ -234,6 +252,7 @@ memory-heavy training, in docker); an NVIDIA Jetson Thor (evaluations). Conda en
 | `3dgrut` | Pi3X, fusion, registration, colour bake | torch 2.11, open3d 0.19, [Pi3](https://github.com/yyfz/Pi3) (`PI3_ROOT`) |
 | `handtrack` | `recon/hand_track.py` | mediapipe 1.1 |
 | `maniskill` | `sim/`, `recon/replay_take.py`, `recon/door_track.py` | mani_skill 3.0.1, sapien 3.0.3, torch 2.11 |
+| `sam3d` | `recon/gs_kitchen.py`, `gs_inpaint.py`, `gs_server.py` (the splat) | torch 2.7, gsplat 1.5.3, open3d |
 
 Raw captures, demonstrations, renders, HDRIs (`Gitignore-but-important/hdri/`, from Poly
 Haven) and checkpoints live in the gitignored `Gitignore-but-important/` (not public).
@@ -272,6 +291,20 @@ python sim/dit_vis.py train --data $G/gen,$G/gen_dart02,$G/gen_dart04 --out $G/v
 python sim/dit_vis.py eval --ckpt $G/vis_v6_long/dit_vis.pt --out $G/vis_v6_long/eval128 --n 128 --jobs 6
 python sim/dit_vis.py eval --ckpt $G/vis_v6_long/dit_vis.pt --out $G/vis_v6_long/eval128_kitchen --n 128 --jobs 6 \
     --backdrop Gitignore-but-important/recon/kitchen/backdrop_mw.glb   # built by recon/kitchen_backdrop.py
+```
+
+```bash
+# 7. the kitchen as a Gaussian splat (env 3dgrut, then sam3d with gsplat 1.5.3), and v6-long in it
+K=Gitignore-but-important/recon/kitchen
+python recon/sweep_dense.py Gitignore-but-important/laptop/kitchen closed $K/closed --out $K/closed_dense --batch 16 --anchors 24
+python recon/gs_inpaint.py --lama big-lama.pt --sweep $K/closed_dense --out $K/gs_inpaint_dense --dilate 18   # LaMa: github.com/enesmsahin/simple-lama-inpainting
+python recon/gs_kitchen.py train --out $K/gs_dense_po --steps 20000 --sweep $K/closed_dense --inpainted $K/gs_inpaint_dense --pose-opt --holdout 8
+python sim/gs_cams.py --out $K/gs/cams_front.npz && python sim/gs_cams.py --demo --out $K/gs/cams_demo.npz
+python recon/gs_kitchen.py render --keep-all --ckpt $K/gs_dense_po/ckpt.pt --cams $K/gs/cams_front.npz --out $K/gs_dense_po/bgall_front.npz
+python sim/dit_vis.py eval --ckpt $G/vis_v6_long/dit_vis.pt --out $G/vis_v6_long/eval128_gs_dense_all --n 128 --jobs 6 \
+    --real-bg $K/gs_dense_po/bgall_front.npz --splat-wrist $K/gs_dense_po/ckpt.pt   # drop --splat-wrist: front only
+python sim/gs_demo.py --ckpt $G/vis_v6_long/dit_vis.pt --front $K/gs_dense_po/bgall_front.npz --splat-wrist $K/gs_dense_po/ckpt.pt \
+    --demo $K/gs_dense_po/bgall_demo.npz --cams $K/gs/cams_demo.npz --out <dir>   # the video's frames
 ```
 
 Each script's docstring states what it does, why, and its flags. On the Jetson Thor, add

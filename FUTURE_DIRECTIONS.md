@@ -103,22 +103,19 @@ train here and more than 3 takes; out of scope before the deadline.
 
 ## 9. A room the cameras can trust (2026-10-16)
 
-The scanned-kitchen backdrop is a poor copy of the room (README): the smooth grey table
-came out as speckled white, the chairs as scattered points. Its geometry is RealSense depth
-fused along Pi3X poses (`recon/fuse_depth.py`); Pi3X's own dense point maps were not used,
-a choice made on the pot orbit (where Pi3X's per-view depths disagreed and the cloud was
-haloed) and carried over to the room without being tested there. A feed-forward model
-predicts a flat textureless table from its prior, where noisy depth at 1 m and grazing
-angles does not, so the first step is cheap: Pi3X dense cloud of the same 60 frames, scale
-from the measured depth, rendered from the front camera next to the real frame.
+Done on the last day (sim/EXPERIMENTS.md 7e): the kitchen as a Gaussian splat behind the
+simulator's robot, microwave and pot, front and wrist cameras. v6-long: 83 % on the grey
+floor, 77 % there (n.s.), but 62 % when only the front camera sees the room -- the cameras
+disagreeing hurt more than the room's look. Next, in order of what it would tell:
 
-Beyond that: a denser sweep (hundreds of frames around the workspace) into a Gaussian
-splat (initialised from the Pi3X cloud), rendered as the background and depth-composited
-with SAPIEN's foreground (robot, microwave, pot), as SplatSim / Re3Sim do. What it adds over
-the single-photo composite (`dit_vis.py --real-bg`) is only what a photo cannot give: the
-wrist camera's view, a moving or jittered camera, and real backgrounds at training time.
-It does not touch the larger gap for a real robot -- the foreground (robot, pot, lighting,
-shadows) is still rendered.
+- **Train with it.** Render the demonstrations' images with splat backgrounds (other rooms,
+  or this one from jittered cameras) as part of the domain randomisation, and test on a
+  splat of a room never trained on; and randomise the two cameras' scenes independently
+  sometimes, so a mismatch between them is not out of distribution.
+- **Contact shadows and lighting.** The simulated pot casts no shadow on the splatted table;
+  relighting the foreground to the splat's light is the larger visual gap left.
+- **A denser, closer sweep** of the workspace: the wrist camera sees the table from
+  centimetres away, where a 1-3 m sweep gives the splat little to go on.
 
 Also unmeasured so far: training-seed variance. Every arm in EXPERIMENTS.md 7d is one run;
 two seeds of v6-long would say how much of the 205x1 vs 96x1 gap is noise.

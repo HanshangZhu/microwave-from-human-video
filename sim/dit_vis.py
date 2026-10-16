@@ -423,10 +423,17 @@ def prop_of(obs, prop="robot"):
     return torch.cat(parts, 1)[0].cpu().float()
 
 
-def images(obs, dev, bg=None):
+def images(obs, dev, bg=None, wsplat=None):
     """The policy's two images at its resolution (supersampled renders are area-downsampled).
-    bg = (image, ids): the front camera's pixels of those segmentation ids (the ground and
-    empty space) replaced by the image -- a real photo taken from the same camera."""
+    bg = (image, ids, depth): the front camera's pixels of those segmentation ids (the ground and
+    empty space) replaced by the image -- a real photo taken from the same camera, or a render
+    of the splatted kitchen (recon/gs_kitchen.py render --keep-all); with depth (m, the
+    render's), also every pixel where the background is more than 5 cm nearer than what the
+    simulator drew there. The splat renders are used without depth: nothing real stands
+    between these cameras and the simulated objects, and a splat's depth is unreliable
+    exactly where the front view is the only view.
+    wsplat: a sim/gs_client.SplatRenderer -- the wrist camera's ground / empty pixels replaced
+    by the splat rendered from its current pose (the same segmentation ids as bg)."""
     if not isinstance(obs, dict):
         return None, None
     from sim.views import downsample
@@ -436,18 +443,36 @@ def images(obs, dev, bg=None):
         img = sd[n]["rgb"][0].cpu().numpy()
         if n == "front" and bg is not None:
             m = np.isin(sd[n]["segmentation"][0, ..., 0].cpu().numpy(), bg[1])
+            if bg[2] is not None:
+                d = sd[n]["depth"][0, ..., 0].cpu().numpy().astype(np.float32) / 1000
+                m |= (d > 0) & (bg[2] < d - 0.05)      # 5 cm: the splat's counter sits ~1-2 cm high
             img = img.copy()
             img[m] = bg[0][m]
+        if n == "wrist" and wsplat is not None:
+            from sim.gs_client import wrist_background
+            m = np.isin(sd[n]["segmentation"][0, ..., 0].cpu().numpy(), bg[1])
+            img = img.copy()
+            img[m] = wrist_background(obs, wsplat)[m]
         out.append(torch.tensor(downsample(img, n))[None].to(dev))
     return tuple(out)
 
 
 def real_background(path, env):
-    """(the photo at the front camera's render size, RGB; the segmentation ids it replaces)"""
+    """(the background at the front camera's render size, RGB; the segmentation ids it replaces;
+    its depth or None). path: a photo, or an .npz from recon/gs_kitchen.py render (rgb, depth)."""
     import cv2
     h, w = env.unwrapped._sensors["front"].config.height, env.unwrapped._sensors["front"].config.width
+    ids = [0, *env.unwrapped.ground.per_scene_id.tolist()]
+    if path.endswith(".npz"):
+        z = np.load(path)
+        assert z["rgb"].shape[1:3] == (h, w), f"render {z['rgb'].shape[1:3]} for a {h}x{w} camera"
+        return z["rgb"][0], ids, None
     img = cv2.cvtColor(cv2.resize(cv2.imread(path), (w, h), interpolation=cv2.INTER_AREA), cv2.COLOR_BGR2RGB)
-    return img, [0, *env.unwrapped.ground.per_scene_id.tolist()]
+    return img, ids, None
+
+
+def bg_obs_mode(path):
+    return "rgb+segmentation"
 
 
 def load_model(ckpt, dev):
@@ -483,6 +508,7 @@ def rollout(args):
     backdrop = args[5] if len(args) > 5 else None
     pot_z = args[7] if len(args) > 7 else 0.0               # pot start height (0: on the counter)
     real_bg = args[8] if len(args) > 8 else None            # a photo behind the front camera's sim objects
+    splat_wrist = args[9] if len(args) > 9 else None        # a splat checkpoint behind the wrist camera's
     import gymnasium as gym
     import sim.microwave_env as M  # noqa: F401
     torch.set_num_threads(2)
@@ -492,7 +518,7 @@ def rollout(args):
     # no images and no video: no renderer at all (a Vulkan device per process ran a 30-process
     # eval out of GPU memory)
     norender = {} if (vis or video_dir) else dict(render_backend="none")
-    env = gym.make("MicrowavePot-v0", obs_mode=("rgb+segmentation" if real_bg else "rgb") if vis else "state",
+    env = gym.make("MicrowavePot-v0", obs_mode=(bg_obs_mode(real_bg) if real_bg else "rgb") if vis else "state",
                    control_mode="pd_joint_pos",
                    pot_mw=(*pot, np.pi / 2), views=("hq" if hq else True) if vis else False,
                    render_mode="rgb_array" if video_dir else None, sim_backend="cpu",
@@ -504,6 +530,10 @@ def rollout(args):
     obs, _ = env.reset(seed=seed)
     u = env.unwrapped
     bg = real_background(real_bg, env) if real_bg else None
+    wsplat = None
+    if splat_wrist:
+        from sim.gs_client import SplatRenderer
+        wsplat = SplatRenderer(splat_wrist)
     hist = [prop_of(obs, m.prop)] * N_OBS
     door_max, pot_max, info, t = 0.0, 0.0, {}, 0
     tcp_path, tcp_prev, tcp_zmax, stops, still = 0.0, None, 0.0, 0, 0
@@ -513,7 +543,7 @@ def rollout(args):
     x_fix = torch.randn(1, H, D_ACT, device=dev) if infer == "fixed_noise" else None
 
     def predict():
-        fr_, wr_ = images(obs, dev, bg)
+        fr_, wr_ = images(obs, dev, bg, wsplat)
         with torch.autocast("cuda", dtype=torch.bfloat16, enabled=not m.fp32):
             return m.sample(torch.stack(hist[-N_OBS:])[None].to(dev), fr_, wr_, x_fix)[0].float().cpu().numpy()
 
@@ -565,6 +595,8 @@ def rollout(args):
                door_shut=bool(info["door_shut"][0]), success=bool(info["success"][0]), pot_final=p.round(3).tolist(),
                tcp_path_m=round(tcp_path, 3), tcp_zmax=round(tcp_zmax, 3), stops=int(stops), closes=closes)
     env.close()
+    if wsplat is not None:
+        wsplat.close()
     return res
 
 
@@ -583,7 +615,7 @@ def show(a):
     seed = 1000 + a.index
     dev = torch.device("cuda")
     m, hq = load_model(a.ckpt, dev)
-    env = gym.make("MicrowavePot-v0", obs_mode="rgb+segmentation" if a.real_bg else "rgb", control_mode="pd_joint_pos",
+    env = gym.make("MicrowavePot-v0", obs_mode=bg_obs_mode(a.real_bg) if a.real_bg else "rgb", control_mode="pd_joint_pos",
                    pot_mw=(*pot, np.pi / 2), views="hq" if hq else True, render_mode="rgb_array", sim_backend="cpu",
                    max_episode_steps=T_MAX, backdrop=a.backdrop)
     obs, _ = env.reset(seed=seed)
@@ -654,7 +686,7 @@ def evaluate(a):
     rng = np.random.default_rng(a.seed)
     jobs = [(a.ckpt, rng.uniform(lo, hi).round(4).tolist(), 1000 + i,
              os.path.join(a.out, f"video_{i:02d}") if i < a.videos else None, a.infer, a.backdrop, a.exec,
-             a.pot_z, a.real_bg) for i in range(a.n)]
+             a.pot_z, a.real_bg, a.splat_wrist) for i in range(a.n)]
     os.makedirs(a.out, exist_ok=True)
     from concurrent.futures import as_completed
     keys = ["door_opened", "grasped_lifted", "pot_inside", "door_shut", "success"]
@@ -721,8 +753,11 @@ def main():
     ap.add_argument("--pot-z", type=float, default=0.0, help="eval: the pot's start height (m), e.g. on top of the microwave")
     ap.add_argument("--pot-shift", default="", help="eval: dx,dy -- move the pot's start region (microwave frame, metres)")
     ap.add_argument("--backdrop", help="eval/show: a visual-only scene mesh (recon/kitchen_backdrop.py) instead of the grey ground")
-    ap.add_argument("--real-bg", help="eval/show: a photo from the front camera's pose (recon/takes/<take>/rest_frame.png) "
-                    "behind its sim objects, in place of the grey ground (the wrist camera is unchanged)")
+    ap.add_argument("--real-bg", help="eval/show: behind the front camera's sim objects, in place of the grey ground: a "
+                    "photo from its pose (recon/takes/<take>/rest_frame.png) or a splat render with depth "
+                    "(recon/gs_kitchen.py render, .npz); the wrist camera is unchanged")
+    ap.add_argument("--splat-wrist", help="eval: a splat checkpoint (recon/gs_kitchen.py, trained --inpainted) rendered "
+                    "behind the wrist camera's sim objects every step (needs --real-bg for the ids)")
     ap.add_argument("--exec", type=int, default=0, help="eval: actions executed per query (default E = 8 of H = 16)")
     ap.add_argument("--infer", choices=["chunk", "fixed_noise", "ensemble"], default="chunk",
                     help="eval: how chunks become actions (see rollout)")
