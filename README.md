@@ -73,77 +73,59 @@ Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room 
 
 ## Conclusions and future work
 
-One training seed per policy; 128 paired starts per number; evidence in `sim/EXPERIMENTS.md`.
+**What the experiments say, in short.** Steps, model size and demonstration count are not
+what limits this policy (~80 %, all n.s.); one random scene per demonstration costs ~20
+points; in the real-looking room the two cameras disagreeing cost 21 points and the room
+itself ~6 (n.s.); a 7 mm band of lid colour the asset had wrong costs 9; and wherever a
+scripted oracle exists, human motion used as action labels loses to it (59 % vs 88 % at
+matched demo counts). Numbers and tests: Full results below and `sim/EXPERIMENTS.md`.
 
-1. **Steps, capacity and data are not what limits this policy at ~80 %.** 3x the steps,
-   a 7x larger action transformer, 2.1x the demonstrations: 80 / 72, 80 / 77, 82 / 80 %
-   against 83 / 81 % (grey / mesh), all n.s. Each moved failures between the grasp and the
-   insertion without reducing them.
-2. **One random scene per demonstration costs ~20 points** (64 / 58 % with the same 96
-   demos; 38 / 45 % with 205). Consistent with the background identifying the demonstration;
-   the 205 x 1 result is unexplained, and training-seed variance was never measured.
-3. **In the real-looking room, what broke the policy was the two cameras disagreeing, not
-   the room.** Splat behind the front camera only, grey grid at the wrist: 62 %; behind
-   both: 77 % (26 / 8, p = 0.003), within noise of the grey floor. In training both cameras
-   always see the same randomised scene.
-4. **The policy keys on the manipulated object's own print.** The lid texture had painted
-   the pot's white rim orange for three days -- geometry measured to 2 mm, nobody checked a
-   7 mm band of colour. Correcting it costs the unchanged policy 9 points on either
-   background (83 -> 74, 77 -> 68; p = 0.05 / 0.04); fine-tuning 12 k steps on the corrected
-   pot brings back 81 / 72 %. At n = 128 neither move is individually beyond noise; the
-   direction is consistent. The randomisation varied scenes, lights and image colour, never
-   the object's appearance.
-5. **Where a scripted oracle exists, human motion costs success; demonstration count matters
-   most.** The hand's tracked paths as solver constraints: 59 % vs the solver's 88 % at 86
-   demos (p < 0.0001), 66 vs 78 % for the carry alone (p = 0.03); the same solver data at
-   71 / 81 / 94 demos: 48 / 78 / 90 %. Not the path's jerk, not the mix of takes. The solver
-   is a free, perfect oracle for exactly this task and region, so anything the human adds to
-   a trajectory is noise relative to it. Human data earns its keep where no such oracle
-   exists; this setup cannot show that, and I do not claim it.
-6. **The extraction is body-agnostic; the motion is not.** The same keyframes drive a G1
-   upper body through the task with no change to the extraction, but as scripted IK with a
-   narrow working range and a waist that swings up to 107 deg to reach what legs would turn
-   towards -- one run, no policy.
+**What they point to.** The last two results are the ones that matter, and together they
+say the human data was used on the wrong side of the pipeline.
 
-**Future work** (`FUTURE_DIRECTIONS.md`): randomise the object's own appearance at render
-time (4); a whole-body G1 in Isaac Lab balanced by an existing whole-body RL controller,
-fed these hand trajectories, then G1 demonstrations and the same recipe (6; section 9);
-and the design these results point to -- the human video trains an object-centric world
-model, the twin only examines it (5; section 10).
+Used as *action labels* -- retargeted and imitated -- a human hand trajectory is noise
+relative to a solver that already produces perfect actions for this task, in this region,
+for free. That is structural, not a tuning problem: the hand is not a gripper, the cavity
+hides it, and the simulator is a better demonstrator of robot actions than any human can
+be. This repo measured that loss and could not have avoided it by any amount of retargeting.
 
-## Full results
+Used as *video*, the same takes carry exactly what the simulator cannot produce: how a real
+door, a real pot and a real room look and move under manipulation. No action labels are
+needed to learn that -- it is what the video head of a world model learns -- and the
+measured sensitivities of the policy here (to the room, to a 7 mm band of print, to the two
+cameras disagreeing) are sensitivities a model trained on real video does not have.
 
-**v6-long across backgrounds and lid textures.** "Orange" is the lid texture it was trained
-with; "white" is the corrected asset in this repo and in the GIFs.
+So the design this project should have had, and the one I would build with the time:
 
-| background seen by the cameras | lid | success | paired against |
-|---|---|---|---|
-| grey floor | orange | 83 % | -- |
-| scanned mesh of the room, uncoloured (noisy) | orange | 81 % | grey: 14 / 12, p = 0.85 |
-| splat, front camera only; wrist sees the grey floor | orange | 62 % | grey: 34 / 8, p = 0.0001 |
-| splat, both cameras | orange | 77 % | grey: 21 / 13, p = 0.23 |
-| grey floor | white | 74 % | orange grey: 19 / 8, p = 0.05 |
-| splat, both cameras | white | 68 % | orange splat: 18 / 7, p = 0.04 |
-| grey floor / splat, both -- fine-tuned 12 k steps on the corrected pot | white | 81 / 72 % | white: 21 / 12, p = 0.16; 16 / 11, p = 0.44 |
+1. **Scale ego-motion video.** Head- or chest-mounted RGB(-D), hundreds of takes rather
+   than three, many objects, many rooms; the wrist pose tracked as the action proxy. It is
+   the cheapest data in robotics to collect, and the only kind that is unlimited.
+2. **Train the video head of a world-action model on it** (V-JEPA 2-style predictor, or the
+   video branch of a WAM such as LingBot-VA): the model learns scene dynamics and
+   appearance from human video alone. Where the data are few, the object-centric variant
+   (`FUTURE_DIRECTIONS.md` 10: predict pot pose and door angle from wrist motion) is the
+   minimal instance of the same idea and fits three takes.
+3. **Align the action head separately, with the robot's own embodiment**: SFT on simulated
+   or teleoperated robot demonstrations, then RL in the twin -- where success is measurable
+   and the scripted oracle is worth something as a critic and a reward, not as a
+   demonstrator. The human never labels robot actions; the robot's actions are learned
+   where they can be scored.
+4. **Use the simulator as the exam, not the data source.** The twin and the splatted room
+   are where a policy is tested across starts, rooms and bodies; the real world is where
+   the model learns what the world looks like. This inverts the pipeline in this repo, in
+   which simulation produced the data and the real room appeared only as a backdrop.
+5. **Then change the body.** With the dynamics in the video head and the actions aligned
+   per embodiment, the Panda -> G1 step is an action-head problem, not a data problem:
+   a whole-body G1 in Isaac Lab on an existing whole-body controller
+   (`FUTURE_DIRECTIONS.md` 9).
 
-**How the policy got here** (orange lid, grey floor / scanned mesh):
-
-| policy | input | grey | mesh |
-|---|---|---|---|
-| DiT + action chunking, clean data | privileged state | 0 % (n = 20) | -- |
-| + DART | privileged state | 70 % | -- |
-| v4: ResNet-18 + DiT, one clean scene, 49 k steps | 2 images + 25 robot numbers | **97 %** | **0 %** |
-| v6: + domain randomisation, 2 scenes per demo, 49 k steps | same | 65 % | 70 % |
-| **v6-long: 102 k steps (submitted)** | same | **83 %** | **81 %** |
-
-**Ablations on v6-long** (grey / mesh, paired with 83 / 81 %): 3x steps 80 / 72 %; 7x larger
-transformer 80 / 77 %; 2.1x demos 82 / 80 % -- all n.s. One scene per demo: 64 / 58 %
-(96 demos, p <= 0.001), 38 / 45 % (205 demos).
-
-**Human paths as solver constraints** (`sim/human_paths.py`, trained as v4, same starts):
-solver vs human approach + carry, 86 demos, 88 % vs 59 % (p < 0.0001); solver vs human carry
-only, 81 demos, 78 % vs 66 % (p = 0.03); solver data at 71 / 81 / 94 demos, 48 / 78 / 90 %.
-Smoothed human paths: 59 %; one take only: 65 %.
+What this repo contributes to that plan is the part that is hard to skip: a registered
+digital twin, per-frame object extraction (the object-centric state the world model would
+predict), a splatted room that closes the visual gap, the finding that the cameras must
+agree, and a measured demonstration of why the alternative -- human motion as labels --
+does not work. None of the plan above is tested here; it stands on a negative result and
+on the brief's own weighting of world modelling over policy performance. That is where I
+would put the two weeks.
 
 ## Design choices, and why
 
@@ -181,6 +163,40 @@ kitchen as a backdrop. v6 renders every demo in two random scenes (`sim/dr.py`: 
 Haven environment maps as background and light, random floor / walls / lights, tinted
 objects, a jittered camera) with colour jitter, blur and random erasing in training. The
 kitchen is never a training scene.
+
+## Full results
+
+**v6-long across backgrounds and lid textures.** "Orange" is the lid texture it was trained
+with; "white" is the corrected asset in this repo and in the GIFs.
+
+| background seen by the cameras | lid | success | paired against |
+|---|---|---|---|
+| grey floor | orange | 83 % | -- |
+| scanned mesh of the room, uncoloured (noisy) | orange | 81 % | grey: 14 / 12, p = 0.85 |
+| splat, front camera only; wrist sees the grey floor | orange | 62 % | grey: 34 / 8, p = 0.0001 |
+| splat, both cameras | orange | 77 % | grey: 21 / 13, p = 0.23 |
+| grey floor | white | 74 % | orange grey: 19 / 8, p = 0.05 |
+| splat, both cameras | white | 68 % | orange splat: 18 / 7, p = 0.04 |
+| grey floor / splat, both -- fine-tuned 12 k steps on the corrected pot | white | 81 / 72 % | white: 21 / 12, p = 0.16; 16 / 11, p = 0.44 |
+
+**How the policy got here** (orange lid, grey floor / scanned mesh):
+
+| policy | input | grey | mesh |
+|---|---|---|---|
+| DiT + action chunking, clean data | privileged state | 0 % (n = 20) | -- |
+| + DART | privileged state | 70 % | -- |
+| v4: ResNet-18 + DiT, one clean scene, 49 k steps | 2 images + 25 robot numbers | **97 %** | **0 %** |
+| v6: + domain randomisation, 2 scenes per demo, 49 k steps | same | 65 % | 70 % |
+| **v6-long: 102 k steps (submitted)** | same | **83 %** | **81 %** |
+
+**Ablations on v6-long** (grey / mesh, paired with 83 / 81 %): 3x steps 80 / 72 %; 7x larger
+transformer 80 / 77 %; 2.1x demos 82 / 80 % -- all n.s. One scene per demo: 64 / 58 %
+(96 demos, p <= 0.001), 38 / 45 % (205 demos).
+
+**Human paths as solver constraints** (`sim/human_paths.py`, trained as v4, same starts):
+solver vs human approach + carry, 86 demos, 88 % vs 59 % (p < 0.0001); solver vs human carry
+only, 81 demos, 78 % vs 66 % (p = 0.03); solver data at 71 / 81 / 94 demos, 48 / 78 / 90 %.
+Smoothed human paths: 59 %; one take only: 65 %.
 
 ## Appendix
 
