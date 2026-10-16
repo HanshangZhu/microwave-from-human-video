@@ -71,7 +71,18 @@ Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room 
 `sim/` (environment, solver, data generation, rendering, policy, splat compositing),
 `archive/` (demoted but kept as evidence, indexed in `archive/README.md`).
 
-## Conclusions and future work
+## Conclusions, statements and future work
+
+**Statement: why this route.** I found this challenge on 13 October and had three days for
+this project (the first day went to an archived attempt). Three days buy one thing: a
+complete, closed-loop, measured result with a control at every step. The route that
+converges in that time is simulation driven by generated data -- a measured digital twin,
+a scripted solver that turns the videos' keyframes into demonstrations, an imitation policy,
+and 128-start paired evaluations -- because every stage of it can be checked the same day
+it is built. The world-model route the brief invites needs what three days cannot give it:
+data at scale and training time. So the choice was made by the clock, not by a belief that
+generated data is the better teacher; the results below say the opposite, and the plan that
+follows is the one I would build with the full two weeks.
 
 **What the experiments say, in short.** Steps, model size and demonstration count are not
 what limits this policy (~80 %, all n.s.); one random scene per demonstration costs ~20
@@ -347,10 +358,6 @@ Each script's docstring states what it does, why, and its flags. On the Jetson T
 
 ### A note on timing
 
-I found this challenge on 13 October, four days before the deadline, and chose the route
-that could reach a complete, measured result in that time: a digital twin, a scripted
-solver, an imitation policy, and an honest evaluation of each. The world-model route the
-brief invites -- the collected video as the training data, the simulator only as the exam
--- is the one I would take with the full two weeks; its design, and why this repo's own
-results point to it, is `FUTURE_DIRECTIONS.md` 10. Thank you for the challenge; it was a
-good four days.
+The route was chosen under a three-day budget (statement above); the design I would take
+with the full two weeks is in the conclusions and `FUTURE_DIRECTIONS.md` 10. Thank you for
+the challenge; it was a good four days.
