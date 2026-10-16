@@ -89,9 +89,9 @@ up 14 points there and holds in rooms it never saw.
 
 ![method](docs/media/method.png)
 
-Blue: the human data. Green: the digital twin. Amber: simulation and learning. Grey: the
-exam. The human video contributes the task's keyframes and the camera; the simulator
-contributes the motion; the room enters only at evaluation.
+The human video contributes the task's keyframes and the camera; the measured twin and the
+solver contribute the motion; the room enters only at evaluation, never in training. The G1
+branch is a single scripted run, outside the evaluation. (Source: `docs/media/method.dot`.)
 
 Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room -> splat),
 `sim/` (environment, solver, data generation, rendering, policy, splat compositing),
