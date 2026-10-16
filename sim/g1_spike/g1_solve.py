@@ -496,7 +496,16 @@ def main():
                                    "Gitignore-but-important/recon/takes/<take>/{pot.json,door.npz}")
     ap.add_argument("--door0", type=float, default=0.0, help="start with the door open (deg), to test later phases")
     ap.add_argument("--snap", default=None, help="save stills (top + side) at every phase step to this dir")
+    ap.add_argument("--torso-deg", type=float, default=None, help="waist yaw the IK may use, each way (default g1_arm.TORSO_LIMIT_DEG)")
+    ap.add_argument("--stance", type=float, nargs=4, default=None, metavar=("X", "Y", "Z", "YAW"),
+                    help="pelvis x y (mw, m), height above the counter (m), yaw (rad); default STANCE (stance_scan.py)")
     a = ap.parse_args()
+    if a.torso_deg is not None:
+        import sim.g1_spike.g1_arm as _ga
+        _ga.TORSO_LIMIT_DEG = a.torso_deg
+    if a.stance is not None:
+        global STANCE
+        STANCE = tuple(a.stance)
     global SNAP_DIR, POT_YAW, PICK_PHI
     if a.take:
         td = os.path.join(ROOT, "Gitignore-but-important/recon/takes", a.take)

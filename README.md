@@ -7,8 +7,7 @@ demonstrations; a **camera-based policy** trained on them runs closed-loop from 
 positions it has not seen, on two camera images and its own joints, nothing privileged.
 It succeeds **74 %** on a plain grey floor and **68 %** with both cameras looking at a
 **3D Gaussian-splat reconstruction of my kitchen** it never saw in training (128 start
-states each). The same keyframes also drive a Unitree G1 upper body through the task,
-scripted. Nothing here has run on a real robot.
+states each). Nothing here has run on a real robot.
 
 ## Demo
 
@@ -29,47 +28,25 @@ scripted. Nothing here has run on a real robot.
 | ![G1](docs/media/g1_scripted_take0.gif) |
 
 The policy's inputs are the front camera (the real RealSense's registered pose and
-intrinsics, 224 x 126) and a wrist camera (inset in the second GIF); in the splatted
-kitchen each is the splat rendered from the camera's pose every step with the simulated
-robot, microwave and pot drawn over it. Novel views are not inputs. The policy takes about
-100 s for what I do in 40 (GIFs: 3x human side, 8x robot side).
+intrinsics, 224 x 126) and a wrist camera (inset in the second GIF); in the splatted kitchen
+each is the splat rendered from the camera's pose every step with the simulated robot,
+microwave and pot drawn over it. Novel views are not inputs. The policy takes about 100 s for
+what I do in 40 (GIFs: 3x human side, 8x robot side).
 **Video (1080p, 18 s): [docs/media/policy_splat_kitchen_1080p.mp4](docs/media/policy_splat_kitchen_1080p.mp4).**
 
-What the front camera sees -- the real frame, the splat composite, the earlier mesh scan:
+**Key result.** The submitted policy (v6-long), 128 unseen start states per column, the same
+starts in both columns; success rate reached at each stage of the task:
 
-![front views](docs/media/front_views.png)
+| stage reached | grey floor | splatted kitchen (both cameras) |
+|---|---|---|
+| door opened | 100 % | 100 % |
+| pot grasped and lifted | 90 % | 77 % |
+| pot inside the microwave | 84 % | 72 % |
+| door shut with the pot inside | 75 % | 69 % |
+| **task success** | **74 %** | **68 %** |
 
-## Results
-
-Task, in order: open the door by its pull handle, pick the pot up from the counter, put it
-on the turntable, shut the door. Success = pot inside on the turntable **and** door < 5 deg.
-ManiSkill3 / SAPIEN 3.0.3, PhysX CPU, 20 Hz joint-position control, up to 3000 steps. Every
-number below is 128 closed-loop episodes from the **same 128 start states**, so rows pair
-(McNemar; discordant counts and p in `sim/EXPERIMENTS.md`). One training seed per policy.
-
-**The submitted policy (v6-long) across backgrounds and lid textures.** The policy was
-trained with a lid texture that painted the pot's white rim orange; "white rim" is the
-corrected asset in this repo and in the GIFs.
-
-| background seen by the cameras | lid | success | paired against |
-|---|---|---|---|
-| grey floor (the kind it was trained on) | orange, as trained | 83 % | -- |
-| scanned mesh of the room, uncoloured (noisy) | orange | 81 % | grey: 14 / 12, p = 0.85 |
-| Gaussian splat of the room, front camera only; wrist sees the grey floor | orange | 62 % | grey: 34 / 8, p = 0.0001 |
-| Gaussian splat of the room, both cameras | orange | 77 % | grey: 21 / 13, p = 0.23 |
-| grey floor | **white, as real** | **74 %** | orange-rim grey: 19 / 8, p = 0.05 |
-| Gaussian splat of the room, both cameras | **white, as real** | **68 %** | orange-rim splat: 18 / 7, p = 0.04 |
-| grey floor / splat, both cameras -- after 12 k steps of fine-tuning on the corrected pot | white | 81 % / 72 % | white-rim: 21 / 12, p = 0.16; 16 / 11, p = 0.44 |
-
-**How the policy got here**, orange-rim lid throughout:
-
-| policy | input | grey floor | scanned mesh (never trained on) |
-|---|---|---|---|
-| DiT + action chunking, clean data | privileged state (pot pose, door angle) | 0 % (n = 20) | -- |
-| DiT + action chunking, clean + DART | privileged state | 70 % | -- |
-| v4: ResNet-18 + DiT, one clean scene, 49 k steps | 2 images + 25 robot numbers | **97 %** | **0 %** |
-| v6: + domain randomisation, 2 scenes per demo, 49 k steps | same | 65 % | 70 % |
-| **v6-long: v6 trained 102 k steps (submitted)** | same | **83 %** | **81 %** |
+Grey floor vs kitchen, paired: 21 / 13 discordant, p = 0.23. The kitchen was never a
+training scene; it costs the policy at the grasp and nothing at the door.
 
 ## Method
 
@@ -77,7 +54,11 @@ corrected asset in this repo and in the GIFs.
 
 The human video contributes the task's keyframes and the camera; the measured twin and the
 solver contribute the motion; the room enters only at evaluation, never in training. The G1
-branch is a single scripted run outside the evaluation. (Source: `docs/media/method.dot`.)
+branch is a single scripted run outside the evaluation.
+
+What the front camera sees -- the real frame, the splat composite, the earlier mesh scan:
+
+![front views](docs/media/front_views.png)
 
 **The splatted kitchen** (evaluation only): 300 frames of a RealSense sweep of the room,
 posed by Pi3X in batches anchored to a 60-frame global solve; the microwave painted out of
@@ -90,47 +71,79 @@ Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room 
 `sim/` (environment, solver, data generation, rendering, policy, splat compositing),
 `archive/` (demoted but kept as evidence, indexed in `archive/README.md`).
 
-## Statements and conclusions
+## Conclusions and future work
 
-Each is one training seed and 128 paired starts; the evidence is in `sim/EXPERIMENTS.md`.
+One training seed per policy; 128 paired starts per number; evidence in `sim/EXPERIMENTS.md`.
 
-1. **Steps, capacity and data are not what limits this policy at ~80 %.** Against v6-long's
-   83 / 81 % (grey / mesh): 3x the steps 80 / 72 %, a 7x larger action transformer
-   80 / 77 %, 2.1x the demonstrations (205) 82 / 80 % -- all n.s. Each change moved failures
-   between the grasp and the insertion without reducing them.
-2. **One random scene per demonstration costs ~20 points.** The same 96 demos rendered in
-   one scene each: 64 / 58 % (p <= 0.001); 205 demos in one scene each: 38 / 45 %. Consistent
-   with the background identifying the demonstration; the 205 x 1 result is unexplained, and
-   training-seed variance was never measured.
-3. **What broke the policy in the real-looking room was the two cameras disagreeing, not the
-   room.** Splat behind the front camera only, grey grid at the wrist: 62 %; behind both:
-   77 % (26 / 8, p = 0.003), within noise of the grey floor (p = 0.23). In training both
-   cameras always see the same randomised scene.
-4. **The policy keys on the manipulated object's own print.** Correcting a 7 mm band of lid
-   colour the asset had wrong -- geometry measured and registered to 2 mm, nobody checked
-   the colour -- costs 9 points on either background (83 -> 74, 77 -> 68; p = 0.05 / 0.04),
-   spread over grasp, insertion and shutting the door. The randomisation varied scenes,
-   lights and image colour, never the object's appearance. Fine-tuning 12 k steps on the
-   corrected pot brings it to 81 / 72 %. At n = 128 neither the drop nor the recovery is
-   individually beyond noise; the direction is consistent. Object appearance belongs in the
-   randomisation, and a real-to-sim pipeline needs an appearance check against the photos as
-   routine as its geometric residuals.
+1. **Steps, capacity and data are not what limits this policy at ~80 %.** 3x the steps,
+   a 7x larger action transformer, 2.1x the demonstrations: 80 / 72, 80 / 77, 82 / 80 %
+   against 83 / 81 % (grey / mesh), all n.s. Each moved failures between the grasp and the
+   insertion without reducing them.
+2. **One random scene per demonstration costs ~20 points** (64 / 58 % with the same 96
+   demos; 38 / 45 % with 205). Consistent with the background identifying the demonstration;
+   the 205 x 1 result is unexplained, and training-seed variance was never measured.
+3. **In the real-looking room, what broke the policy was the two cameras disagreeing, not
+   the room.** Splat behind the front camera only, grey grid at the wrist: 62 %; behind
+   both: 77 % (26 / 8, p = 0.003), within noise of the grey floor. In training both cameras
+   always see the same randomised scene.
+4. **The policy keys on the manipulated object's own print.** The lid texture had painted
+   the pot's white rim orange for three days -- geometry measured to 2 mm, nobody checked a
+   7 mm band of colour. Correcting it costs the unchanged policy 9 points on either
+   background (83 -> 74, 77 -> 68; p = 0.05 / 0.04); fine-tuning 12 k steps on the corrected
+   pot brings back 81 / 72 %. At n = 128 neither move is individually beyond noise; the
+   direction is consistent. The randomisation varied scenes, lights and image colour, never
+   the object's appearance.
 5. **Where a scripted oracle exists, human motion costs success; demonstration count matters
-   most.** The hand's tracked paths as solver constraints (partial retargeting,
-   `sim/human_paths.py`), trained as v4 at matched demo counts: solver vs human approach +
-   carry 88 % vs 59 % (p < 0.0001); solver vs human carry only 78 % vs 66 % (p = 0.03); the
-   same solver data at 71 / 81 / 94 demos 48 / 78 / 90 %. Not the path's jerk (smoothed:
-   59 %), not the mix of takes (one take: 65 %); the failure, a premature close in front of
-   the pot, also appears with no human data when demos are few. The solver is a free,
-   perfect oracle for exactly this task and region, so anything the human adds to a
-   trajectory is noise relative to it. Human data earns its keep where no such oracle exists;
-   this setup cannot show that, and I do not claim it. The design that follows -- the human
-   video trains an object-centric world model, the twin only examines it -- is
-   `FUTURE_DIRECTIONS.md` 10.
+   most.** The hand's tracked paths as solver constraints: 59 % vs the solver's 88 % at 86
+   demos (p < 0.0001), 66 vs 78 % for the carry alone (p = 0.03); the same solver data at
+   71 / 81 / 94 demos: 48 / 78 / 90 %. Not the path's jerk, not the mix of takes. The solver
+   is a free, perfect oracle for exactly this task and region, so anything the human adds to
+   a trajectory is noise relative to it. Human data earns its keep where no such oracle
+   exists; this setup cannot show that, and I do not claim it.
 6. **The extraction is body-agnostic; the motion is not.** The same keyframes drive a G1
    upper body through the task with no change to the extraction, but as scripted IK with a
-   narrow working range (door 60-75 deg, pot yaw 11-21 deg, no collision checking), one run,
-   no policy. A learned G1 policy is the next project (`FUTURE_DIRECTIONS.md` 9).
+   narrow working range and a waist that swings up to 107 deg to reach what legs would turn
+   towards -- one run, no policy.
+
+**Future work** (`FUTURE_DIRECTIONS.md`): randomise the object's own appearance at render
+time (4); a whole-body G1 in Isaac Lab balanced by an existing whole-body RL controller,
+fed these hand trajectories, then G1 demonstrations and the same recipe (6; section 9);
+and the design these results point to -- the human video trains an object-centric world
+model, the twin only examines it (5; section 10).
+
+## Full results
+
+**v6-long across backgrounds and lid textures.** "Orange" is the lid texture it was trained
+with; "white" is the corrected asset in this repo and in the GIFs.
+
+| background seen by the cameras | lid | success | paired against |
+|---|---|---|---|
+| grey floor | orange | 83 % | -- |
+| scanned mesh of the room, uncoloured (noisy) | orange | 81 % | grey: 14 / 12, p = 0.85 |
+| splat, front camera only; wrist sees the grey floor | orange | 62 % | grey: 34 / 8, p = 0.0001 |
+| splat, both cameras | orange | 77 % | grey: 21 / 13, p = 0.23 |
+| grey floor | white | 74 % | orange grey: 19 / 8, p = 0.05 |
+| splat, both cameras | white | 68 % | orange splat: 18 / 7, p = 0.04 |
+| grey floor / splat, both -- fine-tuned 12 k steps on the corrected pot | white | 81 / 72 % | white: 21 / 12, p = 0.16; 16 / 11, p = 0.44 |
+
+**How the policy got here** (orange lid, grey floor / scanned mesh):
+
+| policy | input | grey | mesh |
+|---|---|---|---|
+| DiT + action chunking, clean data | privileged state | 0 % (n = 20) | -- |
+| + DART | privileged state | 70 % | -- |
+| v4: ResNet-18 + DiT, one clean scene, 49 k steps | 2 images + 25 robot numbers | **97 %** | **0 %** |
+| v6: + domain randomisation, 2 scenes per demo, 49 k steps | same | 65 % | 70 % |
+| **v6-long: 102 k steps (submitted)** | same | **83 %** | **81 %** |
+
+**Ablations on v6-long** (grey / mesh, paired with 83 / 81 %): 3x steps 80 / 72 %; 7x larger
+transformer 80 / 77 %; 2.1x demos 82 / 80 % -- all n.s. One scene per demo: 64 / 58 %
+(96 demos, p <= 0.001), 38 / 45 % (205 demos).
+
+**Human paths as solver constraints** (`sim/human_paths.py`, trained as v4, same starts):
+solver vs human approach + carry, 86 demos, 88 % vs 59 % (p < 0.0001); solver vs human carry
+only, 81 demos, 78 % vs 66 % (p = 0.03); solver data at 71 / 81 / 94 demos, 48 / 78 / 90 %.
+Smoothed human paths: 59 %; one take only: 65 %.
 
 ## Design choices, and why
 
@@ -169,7 +182,7 @@ Haven environment maps as background and light, random floor / walls / lights, t
 objects, a jittered camera) with colour jitter, blur and random erasing in training. The
 kitchen is never a training scene.
 
-## Appendix and ablations
+## Appendix
 
 ### Pipeline stage outcomes
 
@@ -204,9 +217,10 @@ kitchen is never a training scene.
 right hand carries the pot onto the turntable, left hand shuts the door. ManiSkill's
 upper-body G1 has no legs and its pelvis sits at counter height, so re-filmed in the splat
 (`sim/g1_spike/replay_splat.py`: recorded states replayed, the part below the counter hidden
-by the table) it looks mounted at the table. Next: a whole-body G1 in Isaac Lab balanced by
-an existing whole-body RL controller (NVIDIA SONIC), fed these hand trajectories, then G1
-demonstrations and the same camera-policy recipe (`FUTURE_DIRECTIONS.md` 9).
+by the table) it looks mounted at the table. Its waist does what legs would do: with the
+pelvis fixed and 5-DoF arms, the four hand tasks (hook at 0 and 60 deg, pick, place) are all
+reachable only if the waist may swing +-45 deg (`stance_scan.py`); at +-7, 15, 25 or 35 deg
+no stance in the grid reaches them all, and the run above used -107 to +38 deg.
 
 ### Limitations
 
@@ -217,7 +231,7 @@ demonstrations and the same camera-policy recipe (`FUTURE_DIRECTIONS.md` 9).
 - The splatted kitchen is the room's look, not a real image: the robot, microwave and pot
   are simulator renders over it, without shadows on the real table; the splat is blurry
   close up and where the sweep did not look; the ceiling is a flat grey.
-- The object's appearance was never randomised (statement 4).
+- The object's appearance was never randomised (conclusion 4).
 - Hinge friction / damping and the pot's mass are set, not measured.
 - Rollouts are not bit-identical across machines (x86 vs aarch64 PhysX); every comparison is
   paired on one machine. Offline validation error does not predict closed-loop success.
