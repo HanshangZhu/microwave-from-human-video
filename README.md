@@ -15,14 +15,21 @@ discordant, p = 0.23). Nothing here has run on a real robot.
 |---|
 | ![replay](docs/media/take0_replay.gif) |
 
-| robot, solved from take 0 | camera policy (v6-long) in the splatted kitchen, unseen pot position |
+| me (take 0, the real camera) vs. the camera policy (v6-long), same camera, in the splatted kitchen, at a pot position it never saw |
+|---|
+| ![me vs the policy](docs/media/human_vs_policy_splat.gif) |
+
+| robot, solved from take 0 | the policy, a novel view of the splatted kitchen |
 |---|---|
 | ![solver](docs/media/solver_take0.gif) | ![camera policy](docs/media/policy_splat_kitchen.gif) |
 
-Right: a novel view of the splatted kitchen (not a policy input), 8x speed, with the policy's
-two inputs beside it: the front and wrist cameras, each the splat (rendered from the camera's
-pose every step) with the simulated objects drawn over it. A 1080p version with a second view: [`docs/media/policy_splat_kitchen_1080p.mp4`](docs/media/policy_splat_kitchen_1080p.mp4).
-This start succeeds; over the 128 starts, 77 %.
+The policy's two inputs are the front camera (the view above right, at 224 x 126) and the
+wrist camera (inset), each the splat rendered from the camera's pose every step with the
+simulated robot, microwave and pot drawn over it. The bottom-right GIF is a novel view (not a
+policy input), 8x speed; a 1080p version with a second view:
+[`docs/media/policy_splat_kitchen_1080p.mp4`](docs/media/policy_splat_kitchen_1080p.mp4).
+This start succeeds; over the 128 starts, 77 %. The policy takes about 100 s for what I do
+in 40 (the human-side GIF is 3x, the robot side 8x).
 
 What the front camera sees, from the pose registered for the real camera:
 
@@ -221,6 +228,20 @@ real scenes. This setup cannot show that, and I do not claim it.
 - **NVIDIA Newton** (`sim/newton_spike/`): replays the solver at a 0.002 s timestep, at about
   the CPU pool's throughput. Not adopted.
 
+## The same pipeline on a humanoid (scripted only)
+
+| Unitree G1 upper body, ManiSkill, solved from take 0's keyframes |
+|---|
+| ![G1](docs/media/g1_scripted_take0.gif) |
+
+The task keyframes extracted from the human take (pick point, place point, door angle)
+drive a second body with no change to the extraction: the G1's left hand hooks the handle
+and opens the door to 76 deg, the right hand carries the pot onto the turntable, the left
+hand shuts the door (`sim/g1_spike/`, `sim/EXPERIMENTS.md` 9). It is a scripted IK
+solution, not a learned policy, and narrow (door 60-75 deg, pot yaw 11-21 deg; no
+collision checking). Data generation and a camera policy for the G1 are the next step,
+estimated at 1-2 weeks; the Panda policy above is what was finished.
+
 ## Limitations
 
 - Simulation only. One task, one microwave, one pot.
@@ -330,7 +351,12 @@ and the experiments; a second agent built the pot asset (`recon/snap_pot/`). My 
 task and the decision at each fork -- some my own idea, some picked from the agent's
 proposals (cabinet -> microwave; measured instead of reconstructed geometry; a solver
 instead of retargeting the hand; DiT + chunking after the MLP failed; DART; RL in the
-physics the data came from; the camera policy; domain randomisation; that v6 was undertrained). I also did the measurements and
+physics the data came from; the camera policy; domain randomisation; that v6 was undertrained;
+on the last afternoon, to rebuild the room as a Gaussian splat from the Pi3X cloud rather than
+patch the mesh, to paint the microwave out of the images before training, to add frames and
+refine poses when the splat looked unconverged, and the observation that the policy's wrist
+input was still the bare simulator -- which turned the front-only 62 % into the two-camera
+77 % and changed the conclusion). I also did the measurements and
 all recordings, split the work across three machines, and caught wrong turns from the
 outputs: a scan cloud with a door on both sides, a replay whose door did not open (a sign
 error), hand keypoints trusted inside the cavity where the hand cannot be seen. Every

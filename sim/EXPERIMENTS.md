@@ -966,24 +966,12 @@ MuJoCo takes the max of two frictions where PhysX averages.
 
 Verdict: not ported. Revisit for large-scale RL, after making the insertion robust.
 
-## Open, as of 08:40
+## Open, as of 16 Oct 19:00
 
-- A at B's composition: done (88 %; the human paths cost 29 points). Next: smooth the
-  human paths (spline / minimum-jerk fit, solver-speed time parametrisation, blended
-  junctions) and regenerate B; B restricted to take_000/take_001.
-- H4 / H5: done (0 %, 42 %); why images beat the privileged state is still open.
-- v3 long (DINOv2, all patches) on the Spark: epoch 130/240.
-
-## Open, as of 05:55 (superseded where noted above)
-
-- B arm of the human-guided A/B (section 8); v6 (DoorMan-style randomisation) on the grey
-  floor and the kitchen (7d); v3's recipe (frozen DINOv2, all patch tokens) trained as
-  long as v4 (on the Spark) on both scenes -- does attention over patches resist the
-  background change better than pooled CNN features?
-- Which of v4's ingredients matter, at full training: encoder (CNN from scratch vs
-  ResNet-18 vs DINOv2), DART data, EMA, random-shift augmentation -- only training length
-  is established.
-- Why the camera policy beats the privileged-state policy through the same pipeline (97 vs
-  38 %): overfitting to exact state values with 96 demos? Untested.
-- DAgger for the camera student (the solver as expert, local corrections only).
-- Residual RL (section 5) and state DAgger (section 6) are closed as negative results.
+- Training-seed variance: every arm above is one run.
+- The two cameras disagreeing about the scene (7e) is the largest effect found on the last
+  day; randomising the cameras' scenes independently in training, and training with splat
+  backgrounds, are untested (FUTURE_DIRECTIONS.md 9).
+- Why 205 demos x 1 scene (38 / 45 %) is so far below 96 x 1 (64 / 58 %) is unexplained.
+- Earlier open items (the human-path composition B arm, DAgger for the camera student, which
+  of v4's ingredients matter) stand as left in sections 7-8.
