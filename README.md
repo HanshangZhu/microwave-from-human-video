@@ -164,7 +164,9 @@ failure, a premature close in front of the pot, also appears with no human data 
 are few or carry low: it is what this policy does off a thin distribution. **Demo count
 matters most, and human paths cost success here** -- unavoidably, because the solver is a
 free, perfect oracle for exactly this task in exactly this region. Human data earns its keep
-where no such oracle exists; this setup cannot show that, and I do not claim it.
+where no such oracle exists; this setup cannot show that, and I do not claim it. The design
+that follows -- the human video trains an object-centric world model, the twin only examines
+it -- is `FUTURE_DIRECTIONS.md` 10.
 
 ## A 7 mm finding: the policy keys on the object's print
 

@@ -136,3 +136,30 @@ disagreeing hurt more than the room's look. Next, in order of what it would tell
 
 Also unmeasured so far: training-seed variance. Every arm in EXPERIMENTS.md 7d is one run;
 two seeds of v6-long would say how much of the 205x1 vs 96x1 gap is noise.
+
+## 10. The design this should have had: human video trains the model, the twin only examines it (2026-10-16)
+
+The chain, from this repo's own results. (i) With a scripted oracle available in simulation,
+human data cannot show its value: the oracle is a free, perfect demonstrator for exactly the
+evaluated task and region, so anything the human adds to a trajectory is noise relative to
+it (EXPERIMENTS 8: human-guided paths 59-66 % against solver paths 78-90 % at matched demo
+counts). (ii) So the human video should not compete with the simulator as a *source of
+demonstrations*; it should be the *training data of a model* that the simulator cannot
+produce, and the simulator should only be the exam. (iii) The model that fits three takes
+is not a pixel world model fine-tuned from V-JEPA: two minutes of video, with the hand lost
+inside the cavity, cannot support an action-conditioned video predictor with measurable
+quality. It is an object-centric, action-conditioned predictor: state = pot pose + door
+angle (both already extracted per frame, `recon/`), action = wrist pose as the proxy for
+"what the manipulator did" (tracked outside the cavity, interpolated inside); pretrained
+video features (V-JEPA 2, DINOv2) can enter as an encoder for the state, but the dynamics
+are learned in the object space, where three takes are hundreds of transitions, not a few
+thousand pixels-frames. (iv) The exam: in the twin, the robot's end-effector pose stands in
+for the wrist, the predictor's rollouts are scored against the simulated object states on
+starts the takes never showed; the splat room (section 9) closes the background half of the
+visual gap, the object-centric state closes the robot half (the model never sees the arm).
+
+This matches the brief's own weighting -- world modelling "less focusing on policy
+performance", and the collected data irreplaceable in the method -- better than the
+submitted policy does. It needs the twin, the registration and the per-frame object
+tracking first, which is what these four days built; from here it is about three days of
+work, and the next project.
