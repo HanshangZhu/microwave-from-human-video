@@ -686,6 +686,16 @@ evaluation resolves either way. Object-appearance randomisation at render time i
 proper fix; untested. The submitted policy stays v6-long as trained; the fine-tune is reported,
 not swapped in.
 
+### 7g. The evaluation's own noise floor (16 Oct, 23:30)
+
+v6-long, white-rim pot, grey floor: 95 / 128 (74 %) in the standard run; the same 128 starts
+with another sampling-noise seed (`NOISE_SEED_OFFSET=1`): 101 / 128 (79 %); 128 new starts
+(`--seed 2`): 100 / 128 (78 %). A single 128-start number therefore carries about +-5 points
+from the policy's own sampling noise alone, before training-seed variance (never measured).
+Every claim in 7d-7f rests on paired differences on the same starts, which this does not
+touch; it does mean that "grey 74 vs kitchen 68" (21 / 13, p = 0.23) is inside the floor.
+Splat, both cameras, on the new starts: pending.
+
 ## 8. Human-guided robot demonstrations: the hand where it was seen (`human_paths.py`)
 
 Why: so far the human video set only *what* to do (pick and place points, door angle,

@@ -46,11 +46,17 @@ starts in both columns; success rate reached at each stage of the task:
 | **task success** | **74 %** | **68 %** |
 
 Grey floor vs kitchen, paired: 21 / 13 discordant, p = 0.23. The kitchen was never a
-training scene; it costs the policy at the grasp and nothing at the door.
+training scene; it costs the policy at the grasp and nothing at the door. The evaluation's
+own floor: the grey-floor run repeated with another sampling-noise seed gives 79 % on the
+same starts and 78 % on 128 new starts, so single numbers here carry about +-5 points and
+only the paired differences are read.
 
 ## Method
 
 ![method](docs/media/method.png)
+
+\* with the lid texture the policy was trained on (orange rim); with the corrected pot,
+74 % / 68 % (Results).
 
 The human video contributes the task's keyframes and the camera; the measured twin and the
 solver contribute the motion; the room enters only at evaluation, never in training. The G1
@@ -79,9 +85,9 @@ a scripted solver, an imitation policy, and an thorough evaluation of each. The 
 route the brief invites -- the collected video as the training data, the simulator only as
 the exam -- is the one I would take with the full two weeks; its design, and why this
 repo's own results point to it, is below and in `FUTURE_DIRECTIONS.md` 10. After the
-challenge I will continue this project and carry out those world-model experiments here,
-in this repository -- check back if you are interested. Thank you for the challenge; it was
-a good four days.
+challenge I will continue this project and carry out those world-model experiments at
+[github.com/HanshangZhu/V-JEPA_kitchen](https://github.com/HanshangZhu/V-JEPA_kitchen) --
+check it if you are interested. Thank you for the challenge; it was a good four days.
 
 **What the experiments say, in short.** Steps, model size and demonstration count are not
 what limits this policy (~80 %, all n.s.); one random scene per demonstration costs ~20
