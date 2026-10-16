@@ -247,8 +247,11 @@ solution, not a learned policy, and narrow (door 60-75 deg, pot yaw 11-21 deg; n
 collision checking). ManiSkill's upper-body G1 has no legs and stands with its pelvis at
 counter height, so in this re-filming (`sim/g1_spike/replay_splat.py`: the recorded states
 replayed kinematically, the splat behind, the part of the robot below the counter top hidden
-by the table) it looks mounted at the table. Data generation and a camera policy for the G1
-are the next step, estimated at 1-2 weeks; the Panda policy above is what was finished.
+by the table) it looks mounted at the table. The next step is a whole-body G1 in Isaac Lab,
+balanced by an existing whole-body RL controller (NVIDIA SONIC) and fed these hand
+trajectories, then G1 demonstrations and the same camera-policy recipe (`FUTURE_DIRECTIONS.md`
+9; 1-2 days to the first run, 1-2 weeks to a learned policy); the Panda policy above is what
+was finished.
 
 ## Limitations
 

@@ -116,13 +116,20 @@ disagreeing hurt more than the room's look. Next, in order of what it would tell
   relighting the foreground to the splat's light is the larger visual gap left.
 - **A denser, closer sweep** of the workspace: the wrist camera sees the table from
   centimetres away, where a 1-3 m sweep gives the splat little to go on.
-- **Isaac Lab, with the splat as a native asset** (Isaac Sim 5 renders Gaussian splats; the
-  `3dgrut` env exports them). The renderer is the easy part -- it is what the compositing
-  here already does. The cost is the physics port: the Newton check (EXPERIMENTS 10) found
-  five importer traps and an open-loop replay that fails at the simulator's own timestep, and
-  GPU vs CPU PhysX already changes outcomes in ManiSkill (EXPERIMENTS 3). Budget 1-2 days to
-  the first policy rollout, another to a paired 128-start comparison; a learned G1 policy on
-  top of it (EXPERIMENTS 9) 1-2 weeks.
+- **A whole-body G1, not the legless upper body.** The pieces exist on this machine already:
+  NVIDIA's GR00T-WholeBodyControl (SONIC: a G1 whole-body RL controller with a decoupled
+  upper-body command interface, trained checkpoint included), ProtoMotions' G1 motion
+  trackers, BeyondMimic. The plan: move the task into Isaac Lab (Isaac Sim 5 renders Gaussian
+  splats natively; the `3dgrut` env exports ours), let SONIC hold the stance and balance, and
+  feed it the hand trajectories the scripted solver (`sim/g1_spike/`) already produces from
+  the take's keyframes; then generate G1 demonstrations across start states and train the same
+  camera policy recipe. The renderer is the easy part -- it is what the compositing here
+  already does. The costs: the physics port (the Newton check, EXPERIMENTS 10, found five
+  importer traps and an open-loop replay that fails at the simulator's own timestep; GPU vs
+  CPU PhysX already changes outcomes in ManiSkill, EXPERIMENTS 3), and matching SONIC's G1
+  (joint order, gains, observation format) to this task's. Budget: 1-2 days to a first
+  whole-body scripted run in Isaac Lab, another for a paired 128-start evaluation of the Panda
+  policy there, then 1-2 weeks to a learned G1 policy.
 
 Also unmeasured so far: training-seed variance. Every arm in EXPERIMENTS.md 7d is one run;
 two seeds of v6-long would say how much of the 205x1 vs 96x1 gap is noise.
