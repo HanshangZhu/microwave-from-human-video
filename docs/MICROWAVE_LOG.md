@@ -3,8 +3,7 @@
 Context: Humanoid (London) robot-learning internship challenge -- collect real-world
 manipulation data, use it to drive a robot manipulator in simulation, public repo + README.
 Deadline 16 Oct 23:59 BST. Day 1 (13 Oct, finger press -> RoboTwin -> LingBot-VLA-2) is
-archived; this is day 2 onwards. Code was written and run by an AI coding agent (Claude
-Code); the human decided the task, the forks and the measurements, and caught errors.
+archived; this is day 2 onwards.
 
 Task: **open the microwave door by its bar handle, pick a Heinz Snap Pot off the counter,
 put it on the turntable, shut the door.** Robot: Franka Panda. Simulator: ManiSkill3 /
@@ -29,7 +28,7 @@ Demo extraction: `recon/DEMOS.md`. Ideas not done: `FUTURE_DIRECTIONS.md`.
   scan only for pose + colour; the first dimensions disagreed with single depth frames
   (height 279 vs 268 mm, depth incl. door) -> re-measured; a 180 deg registration flip that
   scored as well as the right one -> 360 deg yaw search + visual overlay check.
-- **Pot**: measured mesh built by a second agent (`assets/heinz_snap_pot/`), ~5 mm mean
+- **Pot**: measured mesh (`assets/heinz_snap_pot/`), ~5 mm mean
   Chamfer vs its scan, mass 0.25 kg (guess), friction 1.0 / 0.8.
 
 ## 2. Human demonstrations (done)

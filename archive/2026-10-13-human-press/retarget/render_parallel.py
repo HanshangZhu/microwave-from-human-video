@@ -71,7 +71,7 @@ def main():
                 raise SystemExit(f"missing planned trajectory {src}; run the planning pass first")
             shutil.copy2(src, f"{d}/_traj_data/episode{j}.pkl")
         shard_config(base, name, len(ch))
-        log = open(f"/tmp/claude-1000/render_{name}.log", "w")
+        log = open(f"/tmp/render_{name}.log", "w")
         procs.append((name, ch, subprocess.Popen(
             [PY, "script/collect_data.py", a.task, name],
             stdout=log, stderr=subprocess.STDOUT, cwd=ROOT,

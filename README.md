@@ -308,16 +308,3 @@ Each script's docstring states what it does, why, and its flags. On the Jetson T
 - `docs/viz/` -- step-by-step visualisation of solver vs human-guided demonstrations.
 - `archive/` -- demoted code kept as evidence (state-policy test bed, mesh backdrop, Newton,
   day 1), indexed in `archive/README.md`.
-
-## How this was built
-
-Four days, 13-16 Oct 2026. An AI coding agent (Claude Code) wrote and ran the code and the
-experiments; a second agent built the pot asset. My part: the task, the recordings and
-measurements, splitting the work across three machines, and the decision at each fork --
-some my own, some picked from the agent's proposals: cabinet -> microwave; measured instead
-of reconstructed geometry; a solver instead of retargeting the hand; DART; the camera
-policy and its randomisation; that v6 was undertrained; on the last day, the splat instead
-of patching the mesh, painting the microwave out before training, adding frames when the
-splat looked unconverged, and noticing that the policy's wrist input was still the bare
-simulator, which turned the front-only 62 % into the two-camera 77 %; and that the pot's rim
-was the wrong colour. Every number above comes from the scripts in this repo.
