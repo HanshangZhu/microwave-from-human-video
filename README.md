@@ -27,8 +27,12 @@ body through the task, scripted, not learned (below). Nothing here has run on a 
 The policy's two inputs are the front camera (the view above right, at 224 x 126) and the
 wrist camera (inset), each the splat rendered from the camera's pose every step with the
 simulated robot, microwave and pot drawn over it. The bottom-right GIF is a novel view (not a
-policy input), 8x speed; a 1080p version with a second view:
-[`docs/media/policy_splat_kitchen_1080p.mp4`](docs/media/policy_splat_kitchen_1080p.mp4).
+policy input), 8x speed.
+
+**Video (1080p, 18 s, two novel views + both policy inputs):
+[docs/media/policy_splat_kitchen_1080p.mp4](docs/media/policy_splat_kitchen_1080p.mp4)**
+(GitHub shows it on click; the GIFs above are the same run.)
+
 This start succeeds; over the 128 starts, 77 %. The policy takes about 100 s for what I do
 in 40 (the human-side GIF is 3x, the robot side 8x).
 
