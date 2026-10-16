@@ -21,8 +21,10 @@ from transforms3d.quaternions import quat2mat
 
 VERBOSE = False
 HOLD_TOL = 0.012     # m: how far a holding hand (on the door handle) may be dragged by a torso move
-TORSO_LIMIT_DEG = 7.0   # the waist yaw the IK may use, each way (the robot's own limit is far wider; a
-                        # torso swinging 70-90 deg to reach the cavity solved the task but looked wrong)
+TORSO_LIMIT_DEG = None  # cap on the waist yaw the IK may use, each way (None: the robot's own limit).
+                        # The recorded run swings the waist -107..+38 deg to reach what legs would turn
+                        # towards; with the pelvis fixed and 5-DoF arms no cap below ~45 deg leaves all
+                        # four hand tasks reachable (stance_scan.py), and at 45 the unhook path fails.
 from sim.g1_spike.g1_env import LEFT_ARM, RIGHT_ARM, TORSO, LEFT_FINGERS, RIGHT_FINGERS
 
 
@@ -34,8 +36,9 @@ class G1Kin:
         self.pm = robot.create_pinocchio_model()
         self.names = [l.name for l in robot.links]
         self.lim = np.array(robot.get_qlimits(), dtype=np.float64).reshape(-1, 2)
-        lim = np.deg2rad(TORSO_LIMIT_DEG)
-        self.lim[TORSO] = [max(self.lim[TORSO, 0], -lim), min(self.lim[TORSO, 1], lim)]
+        if TORSO_LIMIT_DEG is not None:
+            lim = np.deg2rad(TORSO_LIMIT_DEG)
+            self.lim[TORSO] = [max(self.lim[TORSO, 0], -lim), min(self.lim[TORSO, 1], lim)]
         self.T_root = root_pose.to_transformation_matrix()
 
     def link(self, suffix):
