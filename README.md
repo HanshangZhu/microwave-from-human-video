@@ -103,9 +103,9 @@ sim/       MicrowavePot-v0 (ManiSkill3 / SAPIEN)
                                  images re-rendered from stored states; --dr: random scenes
              dit_vis.py          camera policy: image + joint tokens -> DiT action chunks
              gs_demo.py, gs_client.py   the splat behind the simulator's cameras
-             dit.py, bc.py       privileged-state policies (test bed)
-             rl_cpu.py, dagger.py   residual PPO and DAgger on the state policy (negative)
              human_paths.py      partial retargeting: the hand's tracked paths as solver constraints
+archive/   demoted but kept as evidence (archive/README.md): the privileged-state test bed
+           (bc, dit, DAgger, residual RL), the mesh backdrop, the Newton spike, day 1
 ```
 
 ## Design choices, and why
@@ -198,7 +198,7 @@ recovers the 9 points: `sim/EXPERIMENTS.md` 7f.
   (p <= 0.001); 205 demos in one scene each, 38 / 45 %. Consistent with the background
   identifying the demo; the 205 x 1 result is unexplained, and training-seed variance was
   never measured (one run per arm).
-- **NVIDIA Newton** (`sim/newton_spike/`): reproduces the solver at a 0.002 s timestep, not
+- **NVIDIA Newton** (`archive/newton_spike/`): reproduces the solver at a 0.002 s timestep, not
   at ManiSkill's 0.01 s; five importer traps; not adopted (`EXPERIMENTS.md` 10).
 
 ## The same pipeline on a humanoid (scripted only)
@@ -278,7 +278,7 @@ python sim/dit_vis.py train --data $G/gen,$G/gen_dart02,$G/gen_dart04 --out $G/v
     --encoder resnet18 --views views_drm0,views_drm1 --ema --erase 0.3 --color-aug
 python sim/dit_vis.py eval --ckpt $G/vis_v6_long/dit_vis.pt --out $G/vis_v6_long/eval128 --n 128 --jobs 6
 python sim/dit_vis.py eval --ckpt $G/vis_v6_long/dit_vis.pt --out $G/vis_v6_long/eval128_kitchen --n 128 --jobs 6 \
-    --backdrop Gitignore-but-important/recon/kitchen/backdrop_mw.glb   # recon/kitchen_backdrop.py
+    --backdrop Gitignore-but-important/recon/kitchen/backdrop_mw.glb   # archive/mesh-backdrop/kitchen_backdrop.py
 
 # 7. the kitchen as a Gaussian splat (env 3dgrut, then sam3d), and the policy in it
 K=Gitignore-but-important/recon/kitchen
@@ -306,7 +306,8 @@ Each script's docstring states what it does, why, and its flags. On the Jetson T
 - `FUTURE_DIRECTIONS.md` -- when human video is needed at all, a wrist IMU for the occluded
   part, ego video as a video-prediction target, the whole-body G1 in Isaac Lab.
 - `docs/viz/` -- step-by-step visualisation of solver vs human-guided demonstrations.
-- `archive/2026-10-13-human-press/` -- day 1.
+- `archive/` -- demoted code kept as evidence (state-policy test bed, mesh backdrop, Newton,
+  day 1), indexed in `archive/README.md`.
 
 ## How this was built
 

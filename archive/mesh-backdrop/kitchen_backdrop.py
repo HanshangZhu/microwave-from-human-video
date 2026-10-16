@@ -10,7 +10,7 @@ simulated pot is the only pot). The counter surface itself stays. Exported as a 
 coloured GLB in the microwave frame; MicrowavePotEnv(backdrop=...) places it.
 
 Runs in the env with open3d (3dgrut):
-  python recon/kitchen_backdrop.py <run dir with mesh.ply + registration.json> --out <file.glb>
+  python archive/mesh-backdrop/kitchen_backdrop.py <run dir with mesh.ply + registration.json> --out <file.glb>
 """
 import argparse
 import json

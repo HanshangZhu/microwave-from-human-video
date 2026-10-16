@@ -22,7 +22,7 @@ deterministic replay of the student to the same state; the first that succeeds i
 here), regrasp (open, back off 8 cm, in again), restart (open, tuck, the whole pick).
 A pot that was knocked over is skipped.
 
-  python sim/dagger.py --ckpt <student dit.pt> --out <dir> [--n 96] [--branches 5] [--jobs 24]
+  python archive/state-policy/dagger.py --ckpt <student dit.pt> --out <dir> [--n 96] [--branches 5] [--jobs 24]
 
 Writes <out>/run_XXX/demo.npz and <out>/summary.json in sim/generate.py's layout, so
 sim/dit.py train --data ...,<out> reads it directly.
@@ -36,9 +36,9 @@ import multiprocessing as mp
 
 import numpy as np
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "sim"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 TAKES = ["take_000", "take_001", "take_002"]
 

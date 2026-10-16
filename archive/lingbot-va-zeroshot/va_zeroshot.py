@@ -32,7 +32,7 @@ Mapping onto our env (no training, nothing tuned to the task):
 
   mkdir -p ext/vklib && ln -sf /lib/aarch64-linux-gnu/libvulkan.so.1 ext/vklib/   # Thor (aarch64)
   LD_LIBRARY_PATH=$PWD/ext/vklib VK_ICD_FILENAMES=/etc/vulkan/icd.d/nvidia_icd.json \
-  .venv-va/bin/python sim/va_zeroshot.py --episodes 2 --prompt long
+  .venv-va/bin/python archive/lingbot-va-zeroshot/va_zeroshot.py --episodes 2 --prompt long
 On Thor, do NOT put /lib/aarch64-linux-gnu itself on LD_LIBRARY_PATH: it holds the system
 cuDNN 9.20, whose sub-libraries then get loaded into torch's cuDNN 9.24 and every conv fails
 (CUDNN_STATUS_SUBLIBRARY_LOADING_FAILED). A directory with only libvulkan.so.1 is enough for
@@ -50,7 +50,7 @@ import time
 import numpy as np
 import torch
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
 
 CKPT = "lerobot/lingbot_va_libero_long"

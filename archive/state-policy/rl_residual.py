@@ -16,9 +16,9 @@ Reward per step:
   smooth: -w_jerk * |d2 p_tcp| (m/step^2): stop-and-go is acceleration and deceleration
   small:  -w_res * |residual / res_scale|^2
 
-  python sim/rl_residual.py base --ckpt <dit.pt> --out <dir>             # the DiT alone
-  python sim/rl_residual.py train --ckpt <dit.pt> --out <dir> [--steps 5e6]
-  python sim/rl_residual.py eval --ckpt <dit.pt> --res <dir>/residual.pt --out <dir>
+  python archive/state-policy/rl_residual.py base --ckpt <dit.pt> --out <dir>             # the DiT alone
+  python archive/state-policy/rl_residual.py train --ckpt <dit.pt> --out <dir> [--steps 5e6]
+  python archive/state-policy/rl_residual.py eval --ckpt <dit.pt> --res <dir>/residual.pt --out <dir>
 
 Episode metrics (logged and in eval): success, stages, steps, tcp path length, stops
 (the tcp nearly at rest, < 1 mm/step, for 10+ steps after moving), mean |d2 p_tcp|.
@@ -33,9 +33,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "sim"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import sim.microwave_env as M  # noqa: E402
 from dit import DiT, E, N_OBS  # noqa: E402
 

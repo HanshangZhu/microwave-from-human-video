@@ -19,8 +19,8 @@ the grasp depth, then re-closing until the time limit. Two questions:
             that demo's close: approach (> 16 steps before), boundary (the 16-action chunk
             contains the close), carry (after the close).
 
-  python sim/probe_close.py openloop --ckpts vis_low,vis_a2m,... [--n-draw 8]
-  python sim/probe_close.py nn --ckpt vis_low --data genlow,genlow_dart02,genlow_dart04 [--episodes 12]
+  python archive/state-policy/probe_close.py openloop --ckpts vis_low,vis_a2m,... [--n-draw 8]
+  python archive/state-policy/probe_close.py nn --ckpt vis_low --data genlow,genlow_dart02,genlow_dart04 [--episodes 12]
 """
 import argparse
 import json
@@ -30,9 +30,9 @@ import sys
 import numpy as np
 import torch
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "sim"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import dit_vis as DV  # noqa: E402
 from dit import N_OBS, H, E  # noqa: E402
 

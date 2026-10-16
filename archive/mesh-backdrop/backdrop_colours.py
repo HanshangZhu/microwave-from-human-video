@@ -1,12 +1,12 @@
 """Give the kitchen backdrop its scanned colours in SAPIEN.
 
-recon/kitchen_backdrop.py exports a vertex-coloured GLB, but SAPIEN's add_visual_from_file
+archive/mesh-backdrop/kitchen_backdrop.py exports a vertex-coloured GLB, but SAPIEN's add_visual_from_file
 ignores vertex colours and renders the mesh in its default white material. This clusters
 the face colours (mean of each face's vertices) into k colours by k-means and writes one
 sub-mesh per cluster with a PBR base colour, which SAPIEN does read. k = 64 gives a mean
 colour error of ~2 / 255 on the kitchen scan.
 
-  python recon/backdrop_colours.py backdrop_mw.glb backdrop_mw_color.glb 64 [gain=0.8] [unlit]   (env maniskill)
+  python archive/mesh-backdrop/backdrop_colours.py backdrop_mw.glb backdrop_mw_color.glb 64 [gain=0.8] [unlit]   (env maniskill)
 
 The scan's colours already contain the room's light, and the simulator lights them again:
 the counter (vertex colour ~155 / 255, as in the real frame) renders at ~189 from the front

@@ -17,8 +17,8 @@ Reward per step (stages in order: door open, pot lifted, pot inside, door shut):
 Two stages: first for success (task terms only), then from that residual with the
 style terms on as well (--res to start from a checkpoint).
 
-  python sim/rl_cpu.py train --ckpt <dit.pt> --out <dir> [--steps 4e6]
-  python sim/rl_cpu.py eval  --ckpt <dit.pt> [--res <dir>/residual.pt] --out <dir> [--n 128]
+  python archive/state-policy/rl_cpu.py train --ckpt <dit.pt> --out <dir> [--steps 4e6]
+  python archive/state-policy/rl_cpu.py eval  --ckpt <dit.pt> [--res <dir>/residual.pt] --out <dir> [--n 128]
 
 Eval is deterministic (no exploration noise) and reports success per stage and, over the
 successful episodes, steps, tcp path length, stops and mean tcp acceleration.
@@ -34,9 +34,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.join(ROOT, "sim"))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from rl_residual import POT_REGION, T_EP, Base, Residual, Tracker, summarize  # noqa: E402
 
 HANDLE_DOOR = np.array([0.343, -0.062, 0.17])         # grasp point on the bar, door frame
