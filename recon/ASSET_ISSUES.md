@@ -106,4 +106,4 @@ lid texture painted the whole rim orange -- the flange outside the film included
 unchanged) and `assets/heinz_snap_pot/{visual.glb,lid_texture.png}`; the old texture is in
 `history/brown_rim_v3/`. Every policy was trained and, until this point, evaluated with the
 orange rim; the README's final numbers are re-evaluated with the white one and say so.
-Media made earlier (`take0_replay.gif`, `solver_take0.gif`) still show the orange rim.
+The replay and solver GIFs were regenerated with the corrected pot the same evening; every image in the README now shows the white rim.
