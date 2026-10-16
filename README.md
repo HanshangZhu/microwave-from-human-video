@@ -231,7 +231,7 @@ real scenes. This setup cannot show that, and I do not claim it.
 
 ## The same pipeline on a humanoid (scripted only)
 
-| Unitree G1 upper body, ManiSkill, solved from take 0's keyframes |
+| Unitree G1 upper body (ManiSkill), solved from take 0's keyframes, re-filmed in the splatted kitchen |
 |---|
 | ![G1](docs/media/g1_scripted_take0.gif) |
 
@@ -240,8 +240,11 @@ drive a second body with no change to the extraction: the G1's left hand hooks t
 and opens the door to 76 deg, the right hand carries the pot onto the turntable, the left
 hand shuts the door (`sim/g1_spike/`, `sim/EXPERIMENTS.md` 9). It is a scripted IK
 solution, not a learned policy, and narrow (door 60-75 deg, pot yaw 11-21 deg; no
-collision checking). Data generation and a camera policy for the G1 are the next step,
-estimated at 1-2 weeks; the Panda policy above is what was finished.
+collision checking). ManiSkill's upper-body G1 has no legs and stands with its pelvis at
+counter height, so in this re-filming (`sim/g1_spike/replay_splat.py`: the recorded states
+replayed kinematically, the splat behind, the part of the robot below the counter top hidden
+by the table) it looks mounted at the table. Data generation and a camera policy for the G1
+are the next step, estimated at 1-2 weeks; the Panda policy above is what was finished.
 
 ## Limitations
 
