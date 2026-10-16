@@ -177,8 +177,11 @@ become hard to see; the policy's picture of "the pot" includes its orange top. T
 randomisation varied scenes, lights and image colour, never the manipulated object's own
 appearance -- the one thing the policy must read precisely. Object appearance belongs in
 the randomisation, and a real-to-sim pipeline needs an appearance check against the photos
-as routine as its geometric residuals. Whether a short fine-tune on the corrected pot
-recovers the 9 points: `sim/EXPERIMENTS.md` 7f.
+as routine as its geometric residuals. Fine-tuning v6-long for 12 k steps on the demos
+re-rendered with the corrected pot brings it to 81 % / 72 % (grey / splat) -- back near the
+orange-rim numbers, though at n = 128 neither the 9-point drop nor this recovery is
+individually beyond noise (p = 0.05-0.16; `sim/EXPERIMENTS.md` 7f). The submitted policy
+and every comparison above stay v6-long as trained.
 
 ## What did not work, or only partly
 

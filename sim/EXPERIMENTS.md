@@ -663,9 +663,27 @@ unchanged) and v6-long re-evaluated on the same 128 starts, paired with the oran
 White rim, grey floor: never lifted 13 (orange: 15), lifted not inside 8 (2), inside but door
 not shut 12 (5). Splat: 29 / 7 / 5. The policy was never shown a white rim -- `--color-aug`
 jitters the whole image, the DR randomises scene and lights, nothing randomises the object's
-print -- and a 7 mm band of the wrong colour costs 9 points. Object-appearance randomisation
-(or several lid textures at render time) is the obvious fix; untested. The README's headline
-uses the white-rim numbers, since that is the asset in the repo and in the GIFs.
+print -- and a 7 mm band of the wrong colour costs 9 points. The README's headline uses the
+white-rim numbers, since that is the asset in the repo and in the GIFs.
+
+Fine-tune (`vis_v6_long_wr`): the two DR scene copies of every demo re-rendered with the
+corrected pot (`render_views.py --out-name views_drm{0,1}w`, same DR seeds), v6-long's EMA
+weights trained 12 k more steps on them (`dit_vis.py train --init ... --lr 1e-4`, same recipe),
+same 128 starts:
+
+| v6-long | grey floor | splat, both cameras |
+|---|---|---|
+| orange rim, as trained | 106 (83 %) | 98 (77 %) |
+| white rim, unchanged weights | 95 (74 %) | 87 (68 %) |
+| white rim, fine-tuned 12 k | **104 (81 %)** | **92 (72 %)** |
+
+Paired, fine-tuned vs unchanged on the white rim: 21 / 12 (p = 0.16) and 16 / 11 (p = 0.44);
+vs the orange-rim run: 12 / 14 (p = 0.85) and 12 / 18 (p = 0.36). Fine-tuned grey vs splat:
+25 / 13, p = 0.07. Reading: the appearance shift is repaired by showing the policy the new
+appearance, as expected, but at n = 128 the 9-point effects are at the edge of what this
+evaluation resolves either way. Object-appearance randomisation at render time is the
+proper fix; untested. The submitted policy stays v6-long as trained; the fine-tune is reported,
+not swapped in.
 
 ## 8. Human-guided robot demonstrations: the hand where it was seen (`human_paths.py`)
 
