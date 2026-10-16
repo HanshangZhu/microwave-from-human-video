@@ -78,8 +78,10 @@ chose the route that could reach a complete, measured result in that time: a dig
 a scripted solver, an imitation policy, and an honest evaluation of each. The world-model
 route the brief invites -- the collected video as the training data, the simulator only as
 the exam -- is the one I would take with the full two weeks; its design, and why this
-repo's own results point to it, is below and in `FUTURE_DIRECTIONS.md` 10. Thank you for
-the challenge; it was a good four days.
+repo's own results point to it, is below and in `FUTURE_DIRECTIONS.md` 10. After the
+challenge I will continue this project and carry out those world-model experiments here,
+in this repository -- check back if you are interested. Thank you for the challenge; it was
+a good four days.
 
 **What the experiments say, in short.** Steps, model size and demonstration count are not
 what limits this policy (~80 %, all n.s.); one random scene per demonstration costs ~20
