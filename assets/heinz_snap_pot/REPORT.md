@@ -1,3 +1,8 @@
+> Pruned for the public repo (16 Oct): the intermediate measurement rounds, candidate meshes,
+> render sheets and the three `history/*.zip` snapshots this report refers to were moved out
+> of the tree (41 MB -> 6 MB; kept locally, available on request). The asset itself, its
+> parameters, the comparison images and the residual tables at this level are unchanged.
+
 # Heinz Snap Pot — 3 mm bottom rounding revision
 
 **Geometry and simulation import pass; physical accuracy remains unverified.**
