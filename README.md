@@ -54,7 +54,7 @@ training scene; it costs the policy at the grasp and nothing at the door.
 
 The human video contributes the task's keyframes and the camera; the measured twin and the
 solver contribute the motion; the room enters only at evaluation, never in training. The G1
-branch is a single scripted run outside the evaluation. (Source: `docs/media/method.dot`.)
+branch is a single scripted run outside the evaluation.
 
 What the front camera sees -- the real frame, the splat composite, the earlier mesh scan:
 
