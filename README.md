@@ -313,3 +313,13 @@ Each script's docstring states what it does, why, and its flags. On the Jetson T
 - `docs/viz/` -- step-by-step visualisation of solver vs human-guided demonstrations.
 - `archive/` -- demoted code kept as evidence (state-policy test bed, mesh backdrop, Newton,
   day 1), indexed in `archive/README.md`.
+
+## A note on timing
+
+I found this challenge on 13 October, four days before the deadline, and chose the route
+that could reach a complete, measured result in that time: a digital twin, a scripted
+solver, an imitation policy, and an honest evaluation of each. The world-model route the
+brief invites -- the collected video as the training data, the simulator only as the exam
+-- is the one I would take with the full two weeks; its design, and why this repo's own
+results point to it, is `FUTURE_DIRECTIONS.md` 10. Thank you for the challenge; it was a
+good four days.
