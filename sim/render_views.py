@@ -46,6 +46,8 @@ def render_run(args):
     dr = args[4] if len(args) > 4 else None                 # None, "procedural" or "doorman"
     variant = args[5] if len(args) > 5 else 0
     name = {None: "views_hq" if hq else "views", "procedural": "views_dr", "doorman": f"views_drm{variant}"}[dr]
+    if len(args) > 6 and args[6]:
+        name = args[6]                                      # --out-name: e.g. the same scenes with a changed asset
     out = os.path.join(run_dir, name + ".npz")
     if os.path.exists(out):
         return run_dir, "exists"
@@ -89,6 +91,7 @@ def main():
     ap.add_argument("--dr", choices=["procedural", "doorman"], help="hq + a random visual scene per run (sim/dr.py)"
                     " -> views_dr.npz / views_drm<variant>.npz")
     ap.add_argument("--variant", type=int, default=0, help="--dr doorman: another random scene per run")
+    ap.add_argument("--out-name", help="write <run>/<out-name>.npz instead of the default (same scenes, other asset)")
     a = ap.parse_args()
     runs = []
     for d in a.data.split(","):
@@ -96,7 +99,7 @@ def main():
         runs += [os.path.join(d, f"run_{r['run']:03d}") for r in s["runs"] if r["success"]]
     print(f"{len(runs)} successful runs", flush=True)
     with ProcessPoolExecutor(a.jobs, mp_context=mp.get_context("spawn")) as ex:
-        for k, (r, msg) in enumerate(ex.map(render_run, [(r, a.stride, a.take, a.hq, a.dr, a.variant) for r in runs])):
+        for k, (r, msg) in enumerate(ex.map(render_run, [(r, a.stride, a.take, a.hq, a.dr, a.variant, a.out_name) for r in runs])):
             print(f"  {k + 1:3d}/{len(runs)} {os.path.relpath(r, ROOT)}: {msg}", flush=True)
 
 

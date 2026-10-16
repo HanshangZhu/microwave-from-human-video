@@ -114,6 +114,9 @@ disagreeing hurt more than the room's look. Next, in order of what it would tell
   sometimes, so a mismatch between them is not out of distribution.
 - **Contact shadows and lighting.** The simulated pot casts no shadow on the splatted table;
   relighting the foreground to the splat's light is the larger visual gap left.
+- **Randomise the object's own appearance.** README, "A 7 mm finding": the lid's rim colour
+  alone moves v6-long by 9 points. Render each demo under several lid textures (and pot
+  colours), as the scenes are already randomised; test on the real print held out.
 - **A denser, closer sweep** of the workspace: the wrist camera sees the table from
   centimetres away, where a 1-3 m sweep gives the splat little to go on.
 - **A whole-body G1, not the legless upper body.** The pieces exist on this machine already:

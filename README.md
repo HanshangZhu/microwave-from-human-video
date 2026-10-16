@@ -218,6 +218,32 @@ in exactly this region, so anything the human adds to the trajectory is noise re
 it. Human data earns its keep where no such oracle exists: tasks you cannot script, and
 real scenes. This setup cannot show that, and I do not claim it.
 
+## A 7 mm finding: the policy keys on the object's print
+
+Found on the last evening, from the final video: the real Snap Pot has a white plastic rim
+around its lid, and the asset's lid texture had painted that rim orange (the colour of the
+film's border) since the pot was built three days earlier. The geometry was measured to
+2 mm and registered to 2 mm; nobody looked at the colour of a 7 mm band. Correcting it and
+re-evaluating the unchanged policy on the same 128 starts:
+
+| v6-long, unchanged weights | grey floor | splatted kitchen, both cameras |
+|---|---|---|
+| orange rim (as trained) | 83 % | 77 % |
+| white rim (as real) | 74 % | 68 % |
+
+Paired: 19 / 8 and 18 / 7 discordant, p = 0.05 and 0.04; one training seed. The extra
+failures are not in one phase -- grasp, insertion and shutting the door with the pot inside
+all lose a few -- so it is not that the pot became hard to see; the policy's picture of
+"the pot" simply includes its orange top. The domain randomisation that made it survive
+unseen rooms and lighting (`sim/dr.py`: scenes, lights, image-wide colour jitter, random
+erasing) never varied the manipulated object's own appearance, and the object is the one
+thing in the image the policy must read precisely. Two implications I take from it: object
+appearance belongs in the randomisation as much as the scene does, and a real-to-sim
+pipeline needs an appearance check against the photos as routine as its geometric
+residuals -- a 2 mm mesh with the wrong print is still the wrong object to a camera.
+Whether a short fine-tune on renders of the corrected pot recovers the 9 points is being
+run as this is written (`sim/EXPERIMENTS.md` 7f).
+
 ## What did not work, or only partly
 
 - **Day 1 (archived, `archive/2026-10-13-human-press/`):** a finger pressing a bottle cap ->

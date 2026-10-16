@@ -342,6 +342,10 @@ def train(a):
     img = lambda T_, b: T_[b.cpu()].to(dev, non_blocking=True) if a.images_cpu else T_[b]
     dp = PROP_DIMS[a.prop]
     m = VisDiT(d=a.width, layers=a.layers, heads=a.heads, encoder=a.encoder, d_prop=dp).to(dev)
+    if a.init:                                        # continue from a checkpoint (its EMA weights)
+        c0 = torch.load(a.init, map_location=dev)
+        m.load_state_dict(c0["state"])
+        print(f"initialised from {a.init}", flush=True)
     m.p_mu.copy_(P.reshape(-1, dp).mean(0)); m.p_sd.copy_(P.reshape(-1, dp).std(0) + 1e-3)
     m.a_mu.copy_(A.reshape(-1, D_ACT).mean(0)); m.a_sd.copy_(A.reshape(-1, D_ACT).std(0) + 1e-3)
     An = (A - m.a_mu) / m.a_sd
@@ -761,6 +765,7 @@ def main():
     ap.add_argument("--exec", type=int, default=0, help="eval: actions executed per query (default E = 8 of H = 16)")
     ap.add_argument("--infer", choices=["chunk", "fixed_noise", "ensemble"], default="chunk",
                     help="eval: how chunks become actions (see rollout)")
+    ap.add_argument("--init", help="train: start from this checkpoint's weights (e.g. fine-tune on re-rendered views)")
     ap.add_argument("--save-every", type=int, default=0, help="also save a checkpoint every N epochs (for closed-loop selection)")
     ap.add_argument("--prop", choices=list(PROP_DIMS), default="robot",
                     help="privileged: also the pot pose and door angle (control)")
