@@ -96,3 +96,14 @@ Open:
   that face (corrections 3-24 cm, inconsistent) and is not used. Anchor it with a
   short clip that looks at the microwave front from 0.5-0.7 m without moving it (the
   task videos' 2-3 s still start can serve).
+
+## Update 2026-10-16 20:10: the pot's lid texture
+
+Spotted by eye on the final video: the real Snap Pot's rim is white plastic (the film's
+orange border sits inside it, `Gitignore-but-important/recon/beans/input/0010.png`), but the
+lid texture painted the whole rim orange -- the flange outside the film included. Fixed in
+`recon/snap_pot/prepare.py` (white flange / orange film border 6 mm / teal centre; geometry
+unchanged) and `assets/heinz_snap_pot/{visual.glb,lid_texture.png}`; the old texture is in
+`history/brown_rim_v3/`. Every policy was trained and, until this point, evaluated with the
+orange rim; the README's final numbers are re-evaluated with the white one and say so.
+Media made earlier (`take0_replay.gif`, `solver_take0.gif`) still show the orange rim.

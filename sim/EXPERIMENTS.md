@@ -1,4 +1,4 @@
-# Simulation experiments: log (last update 2026-10-16 18:30)
+# Simulation experiments: log (last update 2026-10-16 20:40)
 
 Everything after the human takes: robot demonstrations, policies, RL. One section per
 experiment, newest results last. RL is **not finished**; its sections record runs and
@@ -644,6 +644,25 @@ mismatch.) Before the wrist run I read the front-only 62 % as "the more realisti
 background, the worse"; that was wrong. The wrist renders' empty directions (the ceiling)
 are filled light grey (`gs_kitchen.EMPTY`); black fill reached 13 % of wrist pixels and was
 replaced before this run. One training seed, one splat, one evaluation.
+
+### 7f. The lid's rim (16 Oct, 20:30)
+
+The real Snap Pot's rim is white plastic; the lid texture painted it orange (the film's
+border colour), so every policy was trained and evaluated on an orange-rimmed pot
+(`recon/ASSET_ISSUES.md`, 16 Oct). Texture corrected (`recon/snap_pot/prepare.py`; geometry
+unchanged) and v6-long re-evaluated on the same 128 starts, paired with the orange-rim runs:
+
+| lid | grey floor | splat, both cameras | grey vs splat |
+|---|---|---|---|
+| orange rim (as trained) | 106 (83 %) | 98 (77 %) | 21 / 13, p = 0.23 |
+| **white rim (the real one)** | **95 (74 %)**, 19 / 8 vs orange, p = 0.052 | **87 (68 %)**, 18 / 7, p = 0.043 | 21 / 13, p = 0.23 |
+
+White rim, grey floor: never lifted 13 (orange: 15), lifted not inside 8 (2), inside but door
+not shut 12 (5). Splat: 29 / 7 / 5. The policy was never shown a white rim -- `--color-aug`
+jitters the whole image, the DR randomises scene and lights, nothing randomises the object's
+print -- and a 7 mm band of the wrong colour costs 9 points. Object-appearance randomisation
+(or several lid textures at render time) is the obvious fix; untested. The README's headline
+uses the white-rim numbers, since that is the asset in the repo and in the GIFs.
 
 ## 8. Human-guided robot demonstrations: the hand where it was seen (`human_paths.py`)
 

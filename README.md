@@ -5,12 +5,16 @@ microwave become a robot (Franka Panda) doing the same task in a physics simulat
 that microwave and that pot. A scripted solver turns the videos' object keyframes into
 robot demonstrations, and a **camera-based policy** trained on them runs closed-loop from
 pot positions it has not seen. It sees two camera images and the robot's own joints, and
-nothing privileged. It succeeds **83 %** on a plain grey floor (128 unseen start states),
-and **77 %** with both cameras looking at a **3D Gaussian-splat reconstruction of my
+nothing privileged. It succeeds **74 %** on a plain grey floor (128 unseen start states)
+and **68 %** with both cameras looking at a **3D Gaussian-splat reconstruction of my
 kitchen** instead -- the table, chairs and room it never saw in training, with the robot,
 microwave and pot rendered by the simulator in front of it (not a significant drop: 21 / 13
-discordant, p = 0.23). The same keyframes from the takes also drive a Unitree G1 upper
-body through the task, scripted, not learned (below). Nothing here has run on a real robot.
+discordant, p = 0.23). Those two numbers are with the pot drawn as it really is; the policy
+was trained, and every comparison below was run, with a lid texture that painted the pot's
+white rim orange (found on the last evening), where it scores 83 % and 77 % -- a 7 mm detail
+of the object's look costs it 9 points. The same keyframes from the takes also drive a
+Unitree G1 upper body through the task, scripted, not learned (below). Nothing here has run
+on a real robot.
 
 | human take (left) vs. simulation rendered from the same camera (right) |
 |---|
@@ -33,7 +37,7 @@ policy input), 8x speed.
 [docs/media/policy_splat_kitchen_1080p.mp4](docs/media/policy_splat_kitchen_1080p.mp4)**
 (GitHub shows it on click; the GIFs above are the same run.)
 
-This start succeeds; over the 128 starts, 77 %. The policy takes about 100 s for what I do
+This start succeeds; over the 128 starts, 68 %. The policy takes about 100 s for what I do
 in 40 (the human-side GIF is 3x, the robot side 8x).
 
 What the front camera sees, from the pose registered for the real camera:
@@ -53,7 +57,10 @@ front camera, every step for the wrist camera, in a separate process: gsplat and
 simulator need different torch versions) and the simulator's objects are drawn over it by
 segmentation.
 
-| background (v6-long, same 128 starts) | success | vs grey floor (discordant, p) |
+All policies were trained with a lid texture whose rim is orange instead of white
+(`recon/ASSET_ISSUES.md`, 16 Oct). With that texture, paired on the same 128 starts:
+
+| background (v6-long, orange-rim lid) | success | vs grey floor (discordant, p) |
 |---|---|---|
 | grey floor (the kind of floor it was trained on) | 83 % | -- |
 | scanned mesh of the room, uncoloured | 81 % | 14 / 12, p = 0.85 |
@@ -66,9 +73,21 @@ behind the front camera only, it loses 21 points -- 40 of 128 episodes never lif
 (15 on the grey floor) -- and the both-cameras run beats that front-only one 26 / 8
 (p = 0.003). So what hurt was the two cameras disagreeing about the scene (in training, both
 always see the same randomised scene), not the room's look; the front-only 62 % had first
-looked like "the more realistic, the worse", until the wrist camera was added. One training seed, one
-splat. The scanned-mesh "kitchen" is a noisy scan (speckled near-white table, chairs as
-scattered points, partly my own cropping -- `sim/EXPERIMENTS.md` 7d).
+looked like "the more realistic, the worse", until the wrist camera was added. One training
+seed, one splat. The scanned-mesh "kitchen" is a noisy scan (speckled near-white table,
+chairs as scattered points, partly my own cropping -- `sim/EXPERIMENTS.md` 7d).
+
+With the corrected lid (white rim -- the asset in this repo, and the GIFs above), same starts:
+
+| background (v6-long, white-rim lid) | success | vs the orange-rim run (discordant, p) |
+|---|---|---|
+| grey floor | **74 %** | 19 / 8, p = 0.052 |
+| 3D Gaussian splat of the room, both cameras | **68 %** | 18 / 7, p = 0.043 |
+
+Grey vs splat with the white rim: 21 / 13, p = 0.23, as before. The policy never saw a white
+rim: its training randomised scenes, lighting and image colour, not the object's own print.
+On the grey floor the extra failures are spread over the grasp (13 never lifted), the
+insertion (8) and shutting the door with the pot inside (12, from 5).
 
 Task, in order: open the door by its pull handle, pick the pot up from the counter, put it
 on the turntable, shut the door. Success = the pot inside on the turntable **and** the
@@ -95,6 +114,9 @@ directly (paired McNemar tests in `sim/EXPERIMENTS.md`):
 | v4: ResNet-18 + DiT, one clean scene, 49 k steps | 2 images + 25 robot numbers | **97 %** | **0 %** |
 | v6: + domain randomisation, 2 scenes per demo, 49 k steps | same | 65 % | 70 % |
 | **v6-long: v6 trained 102 k steps (submitted policy)** | same | **83 %** | **81 %** |
+
+(All rows with the orange-rim lid texture the policies were trained on; v6-long with the
+corrected lid: 74 % grey floor, 68 % splatted room -- above.)
 
 v4 is the best policy in the scene it was trained in and useless outside it. v6-long
 gives up 14 points there and holds in backgrounds it never saw: 81 % in the noisy scanned
@@ -265,6 +287,9 @@ was finished.
   views: 26.5 dB held-out PSNR; the ceiling is a flat light grey). The scanned-mesh "kitchen" (81 %) is a noisy scan: the
   table comes out speckled white (holes from my own crop), the chairs as scattered points.
   No claim is made about real images.
+- The policy keys on the pot's own look: correcting the lid's rim from orange to white, a
+  7 mm detail the asset had wrong, costs 9 points on either background (one seed, p = 0.05).
+  Training randomised the scene and the image, not the object's print.
 - Hinge friction / damping and the pot's mass are set, not measured.
 - Rollouts are not bit-identical across machines (x86 vs aarch64 PhysX). Every comparison
   above is paired on one machine.

@@ -28,10 +28,18 @@ def main():
         'texture_size_px':1024,'orange_border_fraction':.085,'art_corner_fraction':.23,
         'method':'Median observed sRGB palette; simplified colour blocks, no invented label text. Scene illumination is baked into sampled colours.'}
     # Colour-only label artwork. These parameters are appearance, not extra geometry.
-    tex=Image.new('RGB',(1024,1024),tuple(round(x*255) for x in palette['lid_border_srgb']))
-    d=ImageDraw.Draw(tex);b=round(1024*c['appearance']['orange_border_fraction'])
-    d.rounded_rectangle((b,b,1023-b,1023-b),radius=round(1024*c['appearance']['art_corner_fraction']),
-                        fill=tuple(round(x*255) for x in palette['lid_teal_srgb']))
+    # The lid quad spans the whole rim (rim_long x rim_short): the plastic flange outside the
+    # film is white, the film's border orange, its centre teal (photo 0010/0037). Until 16 Oct
+    # the flange was painted orange too (history/brown_rim_v3).
+    g=c['geometry'];N=1024;ob=6.0   # orange border of the film, mm
+    film_l,film_s=g['body_top_long_mm']-2*g['lid_inset_mm'],g['body_top_short_mm']-2*g['lid_inset_mm']
+    ox,oy=(g['rim_long_mm']-film_l)/2/g['rim_long_mm'],(g['rim_short_mm']-film_s)/2/g['rim_short_mm']
+    tx,ty=(g['rim_long_mm']-film_l+2*ob)/2/g['rim_long_mm'],(g['rim_short_mm']-film_s+2*ob)/2/g['rim_short_mm']
+    col=lambda k:tuple(round(x*255) for x in palette[k])
+    tex=Image.new('RGB',(N,N),col('plastic_srgb'));d=ImageDraw.Draw(tex)
+    d.rounded_rectangle((ox*N,oy*N,(1-ox)*N,(1-oy)*N),radius=round(N*.14),fill=col('lid_border_srgb'))
+    d.rounded_rectangle((tx*N,ty*N,(1-tx)*N,(1-ty)*N),radius=round(N*.11),fill=col('lid_teal_srgb'))
+    c['appearance']['film_border_mm']=ob
     tex.save(out/'lid_texture.png')
     h=c['geometry']['height_mm']/1000
     span=max(h,c['geometry']['rim_long_mm']/1000)
