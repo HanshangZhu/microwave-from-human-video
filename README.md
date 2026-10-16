@@ -85,28 +85,28 @@ Policies, all evaluated closed-loop on the **same 128 start states** (paired McN
 v4 is the best policy in the scene it was trained in and useless outside it; v6-long gives
 up 14 points there and holds in rooms it never saw.
 
-## The pipeline
+## Method
 
+```mermaid
+flowchart TD
+  H[Human demonstrations<br/>3 RGB-D takes, one fixed RealSense] --> K[Per-frame extraction<br/>door angle, pot pick / place, hand path]
+  K --> C[Trajectory constraints<br/>the take's keyframes]
+  S[Digital-twin scanning<br/>RealSense sweeps: microwave, pot, room] --> P[Pi3X poses + fused depth<br/>dense cloud, RGB frames]
+  M[Real-world measurements<br/>tape and calipers] --> T
+  P --> T[Digital-twin assets<br/>measured URDF + scanned colours; pot mesh]
+  C --> Q[Panda solver<br/>IK along Cartesian paths, executed in physics]
+  T --> Q
+  Q --> D[Sim trajectories + RGB<br/>96 demos, DART noise, cameras at the real pose]
+  D --> R[DoorMan-style domain randomisation<br/>two random scenes per demo]
+  R --> N[Camera policy<br/>ResNet-18 + DiT, action chunks]
+  N --> E[Evaluation: 128 unseen starts<br/>grey floor / scanned mesh / Gaussian-splat room]
+  P --> G[Gaussian splat of the room<br/>microwave painted out, poses refined] --> E
+  H -. same keyframes .-> U[Unitree G1, scripted] --> E
 ```
-capture/   laptop: scan.py (environment + object scans), record.py (task takes)
-   |
-recon/     scan -> measured + textured assets; take -> object keyframes
-   |         microwave: tape measurements -> URDF (assets/microwave/build_microwave.py)
-   |                    scan -> Pi3X poses + fused RealSense depth -> registration -> colour bake
-   |         takes:     camera anchor -> door angle / pot pick & place / hand per frame
-   |                    -> replay video (recorded frame | sim from the same camera)
-   |         kitchen:   sweep -> Pi3X poses -> LaMa (microwave out) -> gsplat 3DGS
-sim/       MicrowavePot-v0 (ManiSkill3 / SAPIEN)
-             solve_microwave.py  IK along Cartesian paths, executed in physics
-             generate.py         new start states in the takes' region (+ DART noise)
-             render_views.py     front (the real RealSense pose + intrinsics) and wrist
-                                 images re-rendered from stored states; --dr: random scenes
-             dit_vis.py          camera policy: image + joint tokens -> DiT action chunks
-             gs_demo.py, gs_client.py   the splat behind the simulator's cameras
-             human_paths.py      partial retargeting: the hand's tracked paths as solver constraints
-archive/   demoted but kept as evidence (archive/README.md): the privileged-state test bed
-           (bc, dit, DAgger, residual RL), the mesh backdrop, the Newton spike, day 1
-```
+
+Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room -> splat),
+`sim/` (environment, solver, data generation, rendering, policy, splat compositing),
+`archive/` (demoted but kept as evidence, indexed).
 
 ## Design choices, and why
 
