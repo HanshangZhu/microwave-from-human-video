@@ -81,7 +81,7 @@ Code: `capture/` (recording), `recon/` (scan -> assets, take -> keyframes, room 
 
 **Statement.** I found this challenge on 13 October, four days before the deadline, and
 chose the route that could reach a complete, measured result in that time: a digital twin,
-a scripted solver, an imitation policy, and an thorough evaluation of each. The world-model
+a scripted solver, an imitation policy, and a thorough evaluation of each. The world-model
 route the brief invites -- the collected video as the training data, the simulator only as
 the exam -- is the one I would take with the full two weeks; its design, and why this
 repo's own results point to it, is below and in `FUTURE_DIRECTIONS.md` 10. After the
