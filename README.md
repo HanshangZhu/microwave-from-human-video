@@ -120,7 +120,8 @@ So the design this project should have had, and the one I would build with the t
    video branch of a WAM such as LingBot-VA): the model learns scene dynamics and
    appearance from human video alone. Where the data are few, the object-centric variant
    (`FUTURE_DIRECTIONS.md` 10: predict pot pose and door angle from wrist motion) is the
-   minimal instance of the same idea and fits three takes.
+   minimal instance of the same idea and fits three takes. This is where the project
+   continues: [V-JEPA_kitchen](https://github.com/HanshangZhu/V-JEPA_kitchen).
 3. **Align the action head separately, with the robot's own embodiment**: SFT on simulated
    or teleoperated robot demonstrations, then RL in the twin -- where success is measurable
    and the scripted oracle is worth something as a critic and a reward, not as a
@@ -141,7 +142,7 @@ predict), a splatted room that closes the visual gap, the finding that the camer
 agree, and a measured demonstration of why the alternative -- human motion as labels --
 does not work. None of the plan above is tested here; it stands on a negative result and
 on the brief's own weighting of world modelling over policy performance. That is where I
-would put the two weeks.
+would put the two weeks, and where the work goes next: [V-JEPA_kitchen](https://github.com/HanshangZhu/V-JEPA_kitchen).
 
 ## Design choices, and why
 
@@ -357,6 +358,7 @@ Each script's docstring states what it does, why, and its flags. On the Jetson T
 - `FUTURE_DIRECTIONS.md` -- when human video is needed at all, a wrist IMU for the occluded
   part, ego video as a video-prediction target, the whole-body G1 in Isaac Lab, the
   world-model design this should have had.
+- [V-JEPA_kitchen](https://github.com/HanshangZhu/V-JEPA_kitchen) -- the continuation: the world-model experiments, starting after the challenge.
 - `docs/viz/` -- step-by-step visualisation of solver vs human-guided demonstrations.
 - `archive/` -- demoted code kept as evidence (state-policy test bed, mesh backdrop, Newton,
   day 1), indexed in `archive/README.md`.

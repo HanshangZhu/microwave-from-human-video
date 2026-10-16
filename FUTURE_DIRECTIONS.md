@@ -162,4 +162,4 @@ This matches the brief's own weighting -- world modelling "less focusing on poli
 performance", and the collected data irreplaceable in the method -- better than the
 submitted policy does. It needs the twin, the registration and the per-frame object
 tracking first, which is what these four days built; from here it is about three days of
-work, and the next project.
+work, and the next project: [V-JEPA_kitchen](https://github.com/HanshangZhu/V-JEPA_kitchen).
