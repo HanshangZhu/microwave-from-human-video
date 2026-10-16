@@ -1,0 +1,239 @@
+{
+  "round": 2,
+  "status": "NOT_FULLY_VERIFIED",
+  "structural_pass": true,
+  "ruler_2mm_pass": false,
+  "approximate_nominal_dimensions_2mm_pass": true,
+  "raw_symmetric_chamfer_p95_le_5mm": false,
+  "parameter_export_2mm_pass": true,
+  "dimensions": [
+    {
+      "dimension": "height_mm",
+      "parameter_mm": 63.5,
+      "exported_mm": 63.50000202655792,
+      "export_error_mm": 2.0265579223632812e-06,
+      "ruler_mm": 63.5,
+      "ruler_error_mm": 2.0265579223632812e-06,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "body_top_long_mm",
+      "parameter_mm": 80,
+      "exported_mm": 79.99999820000001,
+      "export_error_mm": -1.799999992613266e-06,
+      "ruler_mm": 80,
+      "ruler_error_mm": -1.799999992613266e-06,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "body_top_short_mm",
+      "parameter_mm": 55,
+      "exported_mm": 54.9999998,
+      "export_error_mm": -2.0000000233721948e-07,
+      "ruler_mm": 55,
+      "ruler_error_mm": -2.0000000233721948e-07,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "rim_long_mm",
+      "parameter_mm": 95,
+      "exported_mm": 94.9999988079071,
+      "export_error_mm": -1.1920928955078125e-06,
+      "ruler_mm": 95,
+      "ruler_error_mm": -1.1920928955078125e-06,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "rim_short_mm",
+      "parameter_mm": 74,
+      "exported_mm": 74.00000095367432,
+      "export_error_mm": 9.5367431640625e-07,
+      "ruler_mm": 74,
+      "ruler_error_mm": 9.5367431640625e-07,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "base_long_mm",
+      "parameter_mm": 68,
+      "exported_mm": 68.00000369548798,
+      "export_error_mm": 3.6954879760742188e-06,
+      "ruler_mm": 68,
+      "ruler_error_mm": 3.6954879760742188e-06,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "base_short_mm",
+      "parameter_mm": 48,
+      "exported_mm": 48.00000041723251,
+      "export_error_mm": 4.172325134277344e-07,
+      "ruler_mm": 48,
+      "ruler_error_mm": 4.172325134277344e-07,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    },
+    {
+      "dimension": "top_assembly_thickness_mm",
+      "parameter_mm": 2.5,
+      "exported_mm": 2.5000013265579213,
+      "export_error_mm": 1.3265579212884404e-06,
+      "ruler_mm": 2.5,
+      "ruler_error_mm": 1.3265579212884404e-06,
+      "measurement_quality": "APPROXIMATE_USER_MEASUREMENTS",
+      "nominal_2mm_check": "PASS",
+      "ruler_check": "APPROXIMATE_ONLY"
+    }
+  ],
+  "structural": {
+    "visual_watertight": true,
+    "visual_winding_consistent": true,
+    "visual_connected_components": 1,
+    "visual_volume_m3": 0.0002432130228973907,
+    "visual_triangles": 1200,
+    "base_z_m": 0.0,
+    "base_centre_xy_m": [
+      0.0,
+      0.0
+    ],
+    "visual_collision_bounds_max_difference_mm": 2.6557922527814526e-08,
+    "collision_parts": {
+      "body_convex": {
+        "watertight": true,
+        "convex": true,
+        "winding_consistent": true,
+        "volume_m3": 0.00022610305767145896,
+        "vertices": 106,
+        "triangles": 208,
+        "hull_relative_volume_error": 2.2860661832720867e-09
+      },
+      "rim_lid_convex": {
+        "watertight": true,
+        "convex": true,
+        "winding_consistent": true,
+        "volume_m3": 1.7076768207075444e-05,
+        "vertices": 158,
+        "triangles": 312,
+        "hull_relative_volume_error": 1.0401767283530526e-10
+      }
+    },
+    "uniform_filled_proxy": {
+      "centre_of_mass_m": [
+        -9.070715298191938e-20,
+        6.530915014698195e-19,
+        0.034053160564721234
+      ],
+      "principal_inertia_per_kg_m2": [
+        0.0005754703375499818,
+        0.0008046525265206163,
+        0.000686475209698484
+      ],
+      "note": "Uniform rigid envelope approximation; actual mass distribution unmeasured. Symmetry axes X/Y/Z are principal axes."
+    }
+  },
+  "chamfer": {
+    "mean_mm": 4.68411082862492,
+    "p95_mm": 12.725070718365684,
+    "definition": "Unsquared Euclidean distance; equal 0.5 weight per direction, p95 of this equally weighted mixture.",
+    "cloud_to_mesh_method": "Exact point-to-exported-triangle closest distance; every original finite point; no trimming.",
+    "mesh_to_cloud_method": "200000 area-uniform exterior mesh samples, fixed seed 20261014, nearest raw cloud point.",
+    "point_count": 4089,
+    "surface_sample_count": 200000
+  },
+  "directional": {
+    "cloud_to_mesh": {
+      "count": 4089,
+      "mean_mm": 4.738021410002908,
+      "p95_mm": 15.639362674757288,
+      "max_mm": 23.931523222222065,
+      "over_5mm_count": 1420,
+      "over_5mm_fraction": 0.34727317192467594
+    },
+    "mesh_to_cloud": {
+      "count": 200000,
+      "mean_mm": 4.630200247246932,
+      "p95_mm": 10.386958021483887,
+      "max_mm": 18.423967345647966,
+      "over_5mm_count": 80290,
+      "over_5mm_fraction": 0.40145
+    }
+  },
+  "cloud_to_mesh_by_nearest_region": {
+    "base": {
+      "count": 70,
+      "mean_mm": 8.401076257286663,
+      "p95_mm": 14.69988737184556,
+      "max_mm": 16.307695372973996,
+      "over_5mm_count": 67,
+      "over_5mm_fraction": 0.9571428571428572
+    },
+    "body": {
+      "count": 2537,
+      "mean_mm": 4.597394034027751,
+      "p95_mm": 15.225111122040655,
+      "max_mm": 21.88546640007801,
+      "over_5mm_count": 826,
+      "over_5mm_fraction": 0.32558139534883723
+    },
+    "rim_or_lid": {
+      "count": 1482,
+      "mean_mm": 4.805739232903795,
+      "p95_mm": 16.90927887204611,
+      "max_mm": 23.931523222222065,
+      "over_5mm_count": 527,
+      "over_5mm_fraction": 0.35560053981106615
+    }
+  },
+  "coverage_and_outliers": {
+    "mesh_base_to_cloud": {
+      "count": 23270,
+      "mean_mm": 8.544289351288523,
+      "p95_mm": 14.35729501561861,
+      "max_mm": 18.423967345647966,
+      "over_5mm_count": 23245,
+      "over_5mm_fraction": 0.9989256553502364
+    },
+    "mesh_without_base_to_cloud": {
+      "count": 176730,
+      "mean_mm": 4.114833000876492,
+      "p95_mm": 9.332375458937918,
+      "max_mm": 15.852448789229221,
+      "over_5mm_count": 57045,
+      "over_5mm_fraction": 0.3227805126464098
+    },
+    "min_observed_cloud_z_mm": 4.930368182658906,
+    "points_more_than_5mm_inside_closed_model": 1420,
+    "points_more_than_5mm_outside_closed_model": 0
+  },
+  "gripper": {
+    "max_opening_mm": 80,
+    "rim_short_clearance_mm": 6,
+    "rim_long_clearance_mm": -15,
+    "body_short_clearance_mm": 25,
+    "body_long_clearance_mm": 0,
+    "note": "Geometric opening only; no Panda grasp, force/friction or collision-free approach certified."
+  },
+  "assumptions": [
+    "User dimensions are approximate nominal anchors, not certified ruler ground truth; their uncertainty was not supplied.",
+    "Total height is 63.5 mm, the midpoint of the reported 63-64 mm range.",
+    "The 2.5 mm flat top assembly includes rim plastic and film; it does not mean 2.5 mm film.",
+    "Film thickness 0.15 mm and film inset 1.0 mm remain unresolved appearance/geometry assumptions; rim plastic is derived as 2.35 mm.",
+    "Flat base at z=0; no underside recess, hidden cavity, contents, ribs, or unseen tab geometry.",
+    "Centered rounded-rectangle sections taper linearly from the stated upper body to base dimensions.",
+    "Corners use a regularized exterior-cloud estimate; lateral size disagreement prevents reliable corner metrology.",
+    "Raw cloud is rigidly aligned in XY/yaw only; no isotropic or anisotropic rescaling, Z offset, cropping or residual trimming.",
+    "Significant lateral disagreement with raw fused depth remains; repeated internal surfaces and incomplete coverage do not fully explain physical scale.",
+    "Nominal dimensions are retained instead of shrinking to incompatible depth; actual dimensions may differ from these approximate readings."
+  ]
+}

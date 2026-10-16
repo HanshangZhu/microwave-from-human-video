@@ -1,0 +1,56 @@
+[
+  {
+    "source": "Gitignore-but-important/recon/beans_fuse_K_depth/object.ply",
+    "dimensions_mm": {
+      "height_mm": 65.21899868432115,
+      "base_long_mm": 44.365848390146134,
+      "base_short_mm": 26.10641665898206,
+      "rim_long_mm": 66.1936685779175,
+      "rim_short_mm": 46.2415980640957
+    },
+    "finite_scale_ratios": 40,
+    "total_views": 40,
+    "scale_ratio_p10_p90": [
+      0.504175466299057,
+      0.5102627336978912
+    ],
+    "chosen": false,
+    "selection_basis": "Reassessed using approximate user dimensions and full unscaled-cloud symmetric Chamfer; see selection.json."
+  },
+  {
+    "source": "Gitignore-but-important/recon/beans_fuse_K/object.ply",
+    "dimensions_mm": {
+      "height_mm": 64.03974302005106,
+      "base_long_mm": 56.10484407241118,
+      "base_short_mm": 39.861157398838586,
+      "rim_long_mm": 78.40314443045406,
+      "rim_short_mm": 57.43219586560873
+    },
+    "finite_scale_ratios": 37,
+    "total_views": 40,
+    "scale_ratio_p10_p90": [
+      0.35797037482261657,
+      0.3681397378444672
+    ],
+    "chosen": true,
+    "selection_basis": "Reassessed using approximate user dimensions and full unscaled-cloud symmetric Chamfer; see selection.json."
+  },
+  {
+    "source": "Gitignore-but-important/recon/beans_fuse_none/object.ply",
+    "dimensions_mm": {
+      "height_mm": 65.41251803721345,
+      "base_long_mm": 51.0973081557023,
+      "base_short_mm": 40.35106546913199,
+      "rim_long_mm": 72.82030458054668,
+      "rim_short_mm": 58.899651117129274
+    },
+    "finite_scale_ratios": 37,
+    "total_views": 40,
+    "scale_ratio_p10_p90": [
+      0.3750292956829071,
+      0.3967644989490509
+    ],
+    "chosen": false,
+    "selection_basis": "Reassessed using approximate user dimensions and full unscaled-cloud symmetric Chamfer; see selection.json."
+  }
+]

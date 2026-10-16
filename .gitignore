@@ -2,3 +2,5 @@
 Gitignore-but-important/
 __pycache__/
 *.pyc
+# local rollouts / videos
+outputs/

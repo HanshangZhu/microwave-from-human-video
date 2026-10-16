@@ -1,0 +1,197 @@
+{
+ "feet": {
+  "seen": 457,
+  "texels": 94880,
+  "fraction": 0.004816610455311973
+ },
+ "floor": {
+  "seen": 30451,
+  "texels": 132938,
+  "fraction": 0.2290616678451609
+ },
+ "roof": {
+  "seen": 118653,
+  "texels": 141812,
+  "fraction": 0.8366922404309931
+ },
+ "left_wall": {
+  "seen": 55263,
+  "texels": 62648,
+  "fraction": 0.882119141872047
+ },
+ "right_block": {
+  "seen": 66281,
+  "texels": 110008,
+  "fraction": 0.6025107264926187
+ },
+ "bump_top": {
+  "seen": 3887,
+  "texels": 6088,
+  "fraction": 0.6384691195795007
+ },
+ "bump_bottom": {
+  "seen": 2997,
+  "texels": 6088,
+  "fraction": 0.49227989487516427
+ },
+ "bump_left": {
+  "seen": 3622,
+  "texels": 4108,
+  "fraction": 0.8816942551119766
+ },
+ "bump_right": {
+  "seen": 3638,
+  "texels": 4108,
+  "fraction": 0.8855890944498539
+ },
+ "bump_back_left": {
+  "seen": 4326,
+  "texels": 4936,
+  "fraction": 0.876418152350081
+ },
+ "bump_back_right": {
+  "seen": 4327,
+  "texels": 4936,
+  "fraction": 0.8766207455429498
+ },
+ "bump_back_top": {
+  "seen": 4634,
+  "texels": 6124,
+  "fraction": 0.7566949706074461
+ },
+ "bump_back_bottom": {
+  "seen": 2818,
+  "texels": 6124,
+  "fraction": 0.4601567602873939
+ },
+ "recess_top": {
+  "seen": 3790,
+  "texels": 7444,
+  "fraction": 0.5091348737238044
+ },
+ "recess_bottom": {
+  "seen": 1408,
+  "texels": 7444,
+  "fraction": 0.1891456206340677
+ },
+ "recess_left": {
+  "seen": 4177,
+  "texels": 4630,
+  "fraction": 0.9021598272138229
+ },
+ "recess_right": {
+  "seen": 4211,
+  "texels": 4630,
+  "fraction": 0.9095032397408207
+ },
+ "recess_back": {
+  "seen": 36500,
+  "texels": 37930,
+  "fraction": 0.9622989717901397
+ },
+ "turntable": {
+  "seen": 226,
+  "texels": 463,
+  "fraction": 0.48812095032397407
+ },
+ "control_panel": {
+  "seen": 186248,
+  "texels": 200100,
+  "fraction": 0.9307746126936531
+ },
+ "display": {
+  "seen": 23836,
+  "texels": 25618,
+  "fraction": 0.9304395347021626
+ },
+ "digit_0_0": {
+  "seen": 126,
+  "texels": 142,
+  "fraction": 0.8873239436619719
+ },
+ "digit_0_1": {
+  "seen": 126,
+  "texels": 142,
+  "fraction": 0.8873239436619719
+ },
+ "digit_0_2": {
+  "seen": 151,
+  "texels": 161,
+  "fraction": 0.937888198757764
+ },
+ "digit_0_3": {
+  "seen": 151,
+  "texels": 161,
+  "fraction": 0.937888198757764
+ },
+ "colon_0": {
+  "seen": 24,
+  "texels": 28,
+  "fraction": 0.8571428571428571
+ },
+ "colon_1": {
+  "seen": 22,
+  "texels": 28,
+  "fraction": 0.7857142857142857
+ },
+ "button_0": {
+  "seen": 391,
+  "texels": 600,
+  "fraction": 0.6516666666666666
+ },
+ "button_1": {
+  "seen": 391,
+  "texels": 600,
+  "fraction": 0.6516666666666666
+ },
+ "button_2": {
+  "seen": 391,
+  "texels": 600,
+  "fraction": 0.6516666666666666
+ },
+ "button_3": {
+  "seen": 391,
+  "texels": 600,
+  "fraction": 0.6516666666666666
+ },
+ "knob": {
+  "seen": 395,
+  "texels": 600,
+  "fraction": 0.6583333333333333
+ },
+ "start_stop_0": {
+  "seen": 364,
+  "texels": 600,
+  "fraction": 0.6066666666666667
+ },
+ "start_stop_1": {
+  "seen": 353,
+  "texels": 600,
+  "fraction": 0.5883333333333334
+ },
+ "door_panel": {
+  "seen": 657497,
+  "texels": 663654,
+  "fraction": 0.9907225753178615
+ },
+ "door_window": {
+  "seen": 362909,
+  "texels": 389152,
+  "fraction": 0.9325636255242168
+ },
+ "handle_bar": {
+  "seen": 579,
+  "texels": 600,
+  "fraction": 0.965
+ },
+ "handle_post_top": {
+  "seen": 494,
+  "texels": 600,
+  "fraction": 0.8233333333333334
+ },
+ "handle_post_bottom": {
+  "seen": 444,
+  "texels": 600,
+  "fraction": 0.74
+ }
+}

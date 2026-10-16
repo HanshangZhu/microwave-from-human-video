@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "quality": "APPROXIMATE_USER_MEASUREMENTS",
+  "source": "User chat 2026-10-14; values are approximate, not certified ground truth.",
+  "dimensions_mm": {
+    "height_mm": 63.5,
+    "body_top_long_mm": 80,
+    "body_top_short_mm": 55,
+    "base_long_mm": 68,
+    "base_short_mm": 48,
+    "rim_long_mm": 95,
+    "rim_short_mm": 74,
+    "top_assembly_thickness_mm": 2.5
+  },
+  "reported_height_range_mm": [
+    63,
+    64
+  ],
+  "interpretation": "95 x 74 mm is the outer top/lid plate; 80 x 55 mm is body immediately below it; 68 x 48 mm is the outer base outline, not the recessed panel or support contact outline. 2.5 mm is the entire top assembly, not the peel film alone.",
+  "declared_uncertainty_mm": null,
+  "independent_accuracy_certified": false,
+  "bottom_geometry_estimates": {
+    "bottom_round_height_mm": 3.0,
+    "bottom_round_inset_mm": 3.0,
+    "bottom_recess_depth_mm": 1.0,
+    "bottom_panel_long_mm": 56.0,
+    "bottom_panel_short_mm": 36.0,
+    "bottom_panel_corner_radius_mm": 5.0,
+    "bottom_recess_wall_bevel_mm": 1.0,
+    "bottom_curve_segments": 24,
+    "collision_bottom_sectors": 32,
+    "smooth_curved_normals": true
+  },
+  "bottom_reference": {
+    "path": "references/bottom_34084.jpg",
+    "source": "User underside photo 34084.jpg, 2026-10-14",
+    "metric_scale_available": false,
+    "geometry_confidence": "Qualitative recess and rounded perimeter visible; all new dimensions are estimates.",
+    "omitted": [
+      "moulded text and recycling mark",
+      "fine circumferential mould seam"
+    ]
+  },
+  "bottom_assumptions": [
+    "Bottom photo supports a shallow recessed central panel, perimeter support land, and rounded outer transition. Recess depth 1 mm, transition height/inset 3 mm, panel 56 x 36 mm, panel corner radius 5 mm and recess-wall bevel 1 mm are unmeasured estimates.",
+    "Base 68 x 48 mm means maximum lower-body outline at z=3 mm; nominal contact outline is 62 x 42 mm at z=0. Origin remains the centre of the support plane.",
+    "Body tapers linearly from the outer base outline at z=3 mm to the measured shoulder. No internal cavity, contents or hidden ribs are modelled.",
+    "Moulded underside text, recycling mark and fine seam are omitted; they are not resolved by the metric scan.",
+    "The user approved a 3 mm bottom-round estimate. Circular fillet sections are sampled at 24 uniform arc intervals; analytic split normals smooth curved surfaces while preserving cap and lid edges. Radius remains unmeasured."
+  ],
+  "model_revision": "bottom_round_3mm_v4"
+}

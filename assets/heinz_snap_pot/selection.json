@@ -1,0 +1,83 @@
+{
+  "selected_round": 2,
+  "geometry_fit_rounds": 3,
+  "revision": "approximate_measurements_v2",
+  "selection": "Lowest full untrimmed symmetric mean against three unscaled metric TSDF candidates with the same nominal physical dimensions.",
+  "absolute_accuracy_verified": false,
+  "candidates": [
+    {
+      "round": 1,
+      "folder": "assets/heinz_snap_pot/measurement_candidates/round_1_K_depth",
+      "source": "Gitignore-but-important/recon/beans_fuse_K_depth/object.ply",
+      "chamfer_mean_mm": 9.083045884472877,
+      "chamfer_p95_mm": 18.202785526558547,
+      "reference_cloud_dimensions_mm": {
+        "height_mm": 65.21899868432115,
+        "body_top_long_mm": 60.86282308620516,
+        "body_top_short_mm": 43.84469857403644,
+        "base_long_mm": 44.365848258822105,
+        "base_short_mm": 26.10641659071009,
+        "base_corner_radius_mm": 4.892827430364984,
+        "body_top_corner_radius_mm": 11.945665534904167,
+        "rim_long_mm": 66.19366857967411,
+        "rim_short_mm": 46.24159806538175,
+        "rim_corner_radius_mm": 13.144115280576822,
+        "rim_thickness_mm": 1.2,
+        "lid_thickness_mm": 0.15,
+        "lid_inset_mm": 1.0,
+        "visual_corner_segments": 24,
+        "collision_corner_segments": 12
+      }
+    },
+    {
+      "round": 2,
+      "folder": "assets/heinz_snap_pot/measurement_candidates/round_2_K",
+      "source": "Gitignore-but-important/recon/beans_fuse_K/object.ply",
+      "chamfer_mean_mm": 4.68411082862492,
+      "chamfer_p95_mm": 12.725070718365684,
+      "reference_cloud_dimensions_mm": {
+        "height_mm": 64.03974302005106,
+        "body_top_long_mm": 73.10657109142024,
+        "body_top_short_mm": 55.43219587347198,
+        "base_long_mm": 56.104844065596374,
+        "base_short_mm": 39.86115738736308,
+        "base_corner_radius_mm": 8.675022583608222,
+        "body_top_corner_radius_mm": 17.917096196128096,
+        "rim_long_mm": 78.4031444298846,
+        "rim_short_mm": 57.43219587347198,
+        "rim_corner_radius_mm": 18.917096196128096,
+        "rim_thickness_mm": 1.2,
+        "lid_thickness_mm": 0.15,
+        "lid_inset_mm": 1.0,
+        "visual_corner_segments": 24,
+        "collision_corner_segments": 12
+      }
+    },
+    {
+      "round": 3,
+      "folder": "assets/heinz_snap_pot/measurement_candidates/round_3_none",
+      "source": "Gitignore-but-important/recon/beans_fuse_none/object.ply",
+      "chamfer_mean_mm": 5.914644253665599,
+      "chamfer_p95_mm": 15.785065499095609,
+      "reference_cloud_dimensions_mm": {
+        "height_mm": 65.41251803721345,
+        "body_top_long_mm": 65.57246911353246,
+        "body_top_short_mm": 56.343626951044,
+        "base_long_mm": 51.097308184383465,
+        "base_short_mm": 40.351065482262435,
+        "base_corner_radius_mm": 7.707828746170654,
+        "body_top_corner_radius_mm": 15.23034088346359,
+        "rim_long_mm": 72.82030458048823,
+        "rim_short_mm": 58.89965111674757,
+        "rim_corner_radius_mm": 16.508352966315375,
+        "rim_thickness_mm": 1.2,
+        "lid_thickness_mm": 0.15,
+        "lid_inset_mm": 1.0,
+        "visual_corner_segments": 24,
+        "collision_corner_segments": 12
+      }
+    }
+  ],
+  "metrics_scope": "Historical approximate-measurement flat-base source-selection comparison. Current underside results are in verification.json.",
+  "current_revision": "bottom_round_3mm_v4"
+}

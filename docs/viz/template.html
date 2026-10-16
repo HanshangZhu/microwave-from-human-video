@@ -1,0 +1,713 @@
+<title>从 Take 到 Chunk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=STIX+Two+Text:ital,wght@0,400;0,600;1,400&family=Noto+Serif+SC:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one dark column of "scenes", each a canvas with its controls and a short caption, read top to bottom like a lesson */
+:root {
+  --bg: #0d0f12;
+  --panel: #14171c;
+  --rule: #262b33;
+  --fg: #e8e6e1;
+  --dim: #8b919a;
+  --blue: #58c4dd;     /* solver / robot */
+  --gold: #f0c35c;     /* the human hand */
+  --gold-2: #f7e3a6;   /* the human approach */
+  --green: #83c167;    /* success, kept */
+  --red: #fc6255;      /* failure, removed */
+  --teal: #5cd0b3;     /* door */
+  --violet: #b189e8;   /* pot */
+  --serif: "STIX Two Text", "Noto Serif SC", "CMU Serif", Georgia, serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box }
+html { background: var(--bg) }
+body { background: var(--bg); color: var(--fg); font: 17px/1.7 var(--serif); margin: 0 }
+.wrap { max-width: 1000px; margin: 0 auto; padding-inline: 20px; padding-block: 40px 80px }
+h1 { font-weight: 400; font-size: clamp(30px, 5vw, 46px); line-height: 1.15; margin: 0 0 12px; text-wrap: balance; letter-spacing: .01em }
+h1 em { color: var(--gold); font-style: italic }
+h2 { font-weight: 400; font-size: 26px; margin: 0; text-wrap: balance }
+h2 .n { font-family: var(--mono); font-size: 14px; color: var(--dim); display: block; letter-spacing: .12em; margin-bottom: 4px }
+p { margin: 0; max-width: 68ch }
+.lede { color: var(--dim); font-size: 18px; max-width: 64ch }
+.scene { display: grid; gap: 14px; padding-block: 48px; border-top: 1px solid var(--rule) }
+canvas { width: 100%; display: block; background: var(--panel); border-radius: 4px; touch-action: none }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center }
+.row .sp { flex: 1 }
+button { font: 13px var(--mono); color: var(--fg); background: transparent; border: 1px solid var(--rule); border-radius: 3px; padding: 5px 11px; cursor: pointer }
+button:hover { border-color: var(--dim) }
+button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold) }
+button:focus-visible, input:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px }
+input[type=range] { flex: 1 1 200px; accent-color: var(--gold); min-width: 0 }
+.ro { font: 13px var(--mono); color: var(--dim); font-variant-numeric: tabular-nums }
+.math { font-family: var(--serif); font-style: italic; color: var(--fg); font-size: 19px; text-align: center; padding: 6px 0; overflow-x: auto }
+.math .b { color: var(--blue); font-style: normal } .math .g { color: var(--gold); font-style: normal }
+.math sub { font-size: 12px }
+.c-blue { color: var(--blue) } .c-gold { color: var(--gold) } .c-green { color: var(--green) } .c-red { color: var(--red) } .c-teal { color: var(--teal) } .c-violet { color: var(--violet) } .c-dim { color: var(--dim) }
+.note { font-size: 15px; color: var(--dim) }
+.pipe { display: flex; flex-wrap: wrap; gap: 6px 0; align-items: stretch; margin-top: 28px }
+.pipe a { color: inherit; text-decoration: none; display: grid; gap: 2px; padding: 10px 12px; border: 1px solid var(--rule); border-radius: 3px; min-width: 0; background: var(--panel) }
+.pipe a:hover { border-color: var(--dim) }
+.pipe a b { font-weight: 400; font-size: 16px }
+.pipe a span { font: 12px var(--mono); color: var(--dim) }
+.pipe i { align-self: center; color: var(--dim); font-style: normal; padding: 0 6px; font-family: var(--mono) }
+.pipe a.h { border-color: color-mix(in srgb, var(--gold) 55%, transparent) }
+.pipe a.s { border-color: color-mix(in srgb, var(--blue) 55%, transparent) }
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 12px }
+.split > * { min-width: 0 }
+@media (max-width: 640px) { .split { grid-template-columns: 1fr } body { font-size: 16px } }
+.imgs { display: grid; grid-template-columns: 224fr 128fr; gap: 8px; align-items: start }
+.imgs figure { margin: 0; display: grid; gap: 4px; min-width: 0 }
+.imgs img { width: 100%; image-rendering: pixelated; border-radius: 3px; background: var(--panel) }
+.imgs figcaption { font: 12px var(--mono); color: var(--dim) }
+.ledger { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--rule); border-radius: 4px; overflow: hidden }
+.ledger > div { padding: 16px 18px; min-width: 0 }
+.ledger > div + div { border-left: 1px solid var(--rule) }
+@media (max-width: 640px) { .ledger { grid-template-columns: 1fr } .ledger > div + div { border-left: 0; border-top: 1px solid var(--rule) } }
+.ledger h3 { font-weight: 400; font-size: 18px; margin: 0 0 10px }
+.ledger ul { margin: 0; padding-left: 0; list-style: none; display: grid; gap: 8px; font-size: 15px }
+.ledger li { display: grid; grid-template-columns: auto 1fr; gap: 10px }
+.ledger li span:first-child { font: 12px var(--mono); color: var(--dim); padding-top: 3px; min-width: 52px }
+.res { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+@media (max-width: 640px) { .res { grid-template-columns: 1fr } }
+.res > div { border: 1px solid var(--rule); border-radius: 4px; padding: 14px 16px; display: grid; gap: 4px }
+.res .big { font: 34px var(--serif); font-variant-numeric: tabular-nums }
+.res .lab { font: 12px var(--mono); color: var(--dim); letter-spacing: .06em }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px }
+.legend span { display: inline-flex; align-items: center; gap: 6px }
+.legend i { width: 18px; height: 4px; border-radius: 2px; display: inline-block }
+.legend i.ring { width: 8px; height: 8px; border-radius: 50%; border: 1.2px solid var(--gold) }
+.legend i.dash { height: 0; border-top: 1.5px dashed var(--gold); border-radius: 0; opacity: .7 }
+.ab { display: grid; grid-template-columns: 1fr 1fr; gap: 14px }
+.ab > * { min-width: 0 }
+.abcol { display: grid; gap: 6px; align-content: start }
+.abh { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; justify-content: space-between }
+.abh b { font-weight: 400; font-size: 17px }
+@media (max-width: 640px) { .ab .imgs { grid-template-columns: 1fr } }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px }
+.stats > div { display: grid; gap: 2px; border-left: 2px solid var(--rule); padding-left: 10px; min-width: 0; font-variant-numeric: tabular-nums }
+.stats .lab { font: 11px var(--mono); color: var(--dim); letter-spacing: .04em }
+.stats b { font-weight: 400 }
+@media (max-width: 760px) { .stats { grid-template-columns: 1fr 1fr } }
+@media (max-width: 460px) { .stats { grid-template-columns: 1fr } }
+#t4-runs button { font-size: 12px }
+code { font: 14px var(--mono); color: var(--fg); background: var(--panel); padding: 1px 5px; border-radius: 3px }
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:14px">
+    <div class="ro" style="letter-spacing:.14em">MICROWAVE · POT · FRANKA PANDA · MANISKILL 3</div>
+    <h1>三段人手视频，怎样变成 <em>56,387</em> 个训练样本</h1>
+    <p class="lede">从 RealSense 录的 RGB-D take，到 DiT 策略吃进去的一个个动作块。每一幕都用真实数据：take_000 的原始帧、三段 take 的跟踪结果、生成器真实采样的 60 个构型、同一构型下 A 和 B 的真实轨迹、gen/run_000 的真实渲染图。</p>
+    <nav class="pipe" aria-label="流程">
+      <a class="h" href="#s1"><b>RGB-D take ×3</b><span>40 s · 30 fps · D435i</span></a><i>→</i>
+      <a class="h" href="#s1"><b>相机 · 门 · 罐 · 手</b><span>recon/*.py</span></a><i>→</i>
+      <a class="h" href="#s2"><b>两个范围框</b><span>8 个数</span></a><i>→</i>
+      <a class="h" href="#s3"><b>手腕路径</b><span>仅 B</span></a><i>→</i>
+      <a class="s" href="#s4"><b>求解器 IK + PhysX</b><span>动作从这里来</span></a><i>→</i>
+      <a class="s" href="#s5"><b>DART 扰动</b><span>0 / 0.02 / 0.04 rad</span></a><i>→</i>
+      <a class="s" href="#s6"><b>渲染 + 切块</b><span>每 4 步一个样本</span></a>
+    </nav>
+    <p class="note">金色 = 来自人手视频，蓝色 = 来自求解器或手写规则。这个颜色约定贯穿全页。</p>
+  </header>
+
+  <!-- 1 -->
+  <section class="scene" id="s1">
+    <h2><span class="n">01 · 测量</span>一段 take 里测到了什么</h2>
+    <p>相机固定在桌子一端。<code>take_anchor.py</code> 用最后约 10 秒的静止画面把相机配准到扫描的微波炉模型上，之后每一帧的深度都能放进<span class="c-dim">微波炉坐标系</span>（米，z 向上，台面 z = 0，+y 指向炉腔）。门角度、罐子、手都在这个坐标系里逐帧测量。拖动时间轴看看：手一进黑色炉腔就跟丢了。</p>
+    <div class="row" id="t1-takes"></div>
+    <canvas id="c1" aria-label="左：原始帧与手部关键点；右：微波炉坐标系俯视图"></canvas>
+    <canvas id="c1t" aria-label="时间轴：门角度、手是否被跟踪、罐子是否抬起、罐子是否在炉腔内"></canvas>
+    <div class="row"><button id="t1-play">▶ 播放</button><input type="range" id="t1-r" min="0" max="399" value="149" aria-label="时间"><span class="ro" id="t1-ro"></span></div>
+    <p class="note">黄点 = 由手读出的"夹爪"：拇指尖和食指尖的中点。原始帧只嵌入了 take_000（每 0.5 s 一帧）；另外两段只有俯视图。</p>
+  </section>
+
+  <!-- 2 -->
+  <section class="scene" id="s2">
+    <h2><span class="n">02 · 采样</span>三段视频给了生成器 8 个数</h2>
+    <p><code>generate.py</code> 把 3 个抓取点围成一个框，3 个放置点围成一个框，各外扩 2 cm。每条示范在两个框里各随机取一个点：罐子起点和放置目标。下面是 <code>gen/</code> 真实采样的 60 个构型（种子 0），58 个成功。</p>
+    <div class="split">
+      <canvas id="c2" aria-label="抓取与放置范围框和 60 个采样构型"></canvas>
+      <canvas id="c2d" aria-label="门开角度：人手 57-75 度，求解器 90 度"></canvas>
+    </div>
+    <div class="row"><button id="t2-play">▶ 重放采样</button><span class="ro" id="t2-ro"></span></div>
+    <p class="note">右：门开多大<em>没有</em>从视频里来。<code>generate.py</code> 不传 <code>--open-deg</code>，求解器一律开到 90°，而三段视频里只开到 57°、60°、75°。</p>
+  </section>
+
+  <!-- 3 -->
+  <section class="scene" id="s3">
+    <h2><span class="n">03 · 只有 B</span>把人手的路径弯到新的构型上</h2>
+    <p>B 臂从手部跟踪里取两段可信的位置：抓取前 1.8 s 的<span class="c-teal">接近路径</span>（跟着罐子平移）和抓起后到手进炉腔前的<span class="c-gold">搬运路径</span>。搬运路径按弧长比例 <i>w</i> 混合两个偏移量：起点跟着新的抓取点走，终点跟着新的放置点走。高度 <i>z</i> 不变，所以搬运高度完全来自人手。</p>
+    <div class="math">p′(s) = p(s) + (1 − w)·<span class="b">Δ<sub>pick</sub></span> + w·<span class="g">Δ<sub>place</sub></span>,&nbsp;&nbsp; w = s / S</div>
+    <div class="row" id="t3-takes"></div>
+    <canvas id="c3" aria-label="俯视图：拖动新的抓取点和放置点，路径实时弯曲"></canvas>
+    <p class="note">拖动实心的蓝点（新抓取点）和金点（新放置点）。空心圈是 take 里原来的位置；灰色虚线是原路径。超出采样框时点会变红。最后约 10 cm 的对准和插入炉腔仍由求解器规划。</p>
+  </section>
+
+  <!-- 4 -->
+  <section class="scene" id="s4">
+    <h2><span class="n">04 · 执行</span>补的轨迹：A 和 B 逐段对照</h2>
+    <p>求解器沿笛卡尔路径逐点解 IK，再在 PhysX 里用关节位置控制真正执行。同一个构型（罐子起点、放置目标、种子都相同）各解一次：<span class="c-blue">A 只用求解器</span>，<span class="c-gold">B 在看得到手的地方跟随人手</span>。B 的轨迹按每一步的来源上色，其余部分都是求解器补的。两边的渲染图按阶段对齐播放。时间轴下方是动作标签（关节目标）的 jerk，对数刻度：人手段的尖峰就是策略要学的那部分标签。</p>
+    <div class="row" id="t4-runs" role="group" aria-label="构型"></div>
+    <div class="legend ro">
+      <span><i style="background:var(--blue)"></i>求解器</span>
+      <span><i style="background:var(--gold-2)"></i>人手接近（截断后）</span>
+      <span><i style="background:var(--gold)"></i>人手搬运</span>
+      <span><i class="ring"></i>下发给求解器的人手目标点</span>
+      <span><i class="dash"></i>人手原始路径（截断前）</span>
+    </div>
+    <div class="ab">
+      <div class="abcol" id="t4-A">
+        <div class="abh"><b class="c-blue">A · 只用求解器</b><span class="ro" data-k="badge"></span></div>
+        <div class="imgs"><figure><img data-k="front" alt="A 前视渲染"></figure><figure><img data-k="wrist" alt="A 腕部渲染"></figure></div>
+        <div class="ro" data-k="phase"></div>
+      </div>
+      <div class="abcol" id="t4-B">
+        <div class="abh"><b class="c-gold">B · 人手引导</b><span class="ro" data-k="badge"></span></div>
+        <div class="imgs"><figure><img data-k="front" alt="B 前视渲染"></figure><figure><img data-k="wrist" alt="B 腕部渲染"></figure></div>
+        <div class="ro" data-k="phase"></div>
+      </div>
+    </div>
+    <canvas id="c4ph" aria-label="两条示范的阶段时间轴，按来源上色"></canvas>
+    <div class="row"><button id="t4-play">▶ 播放</button><input type="range" id="t4-r" min="0" max="1000" value="560" aria-label="进度"><span class="sp"></span><button id="t4-align" aria-pressed="true">按阶段对齐</button></div>
+    <canvas id="c4" aria-label="左：俯视图；右：侧视图（y-z）"></canvas>
+    <div class="stats" id="t4-stats"></div>
+    <p class="note" id="t4-note"></p>
+  </section>
+
+  <!-- 5 -->
+  <section class="scene" id="s5">
+    <h2><span class="n">05 · DART</span>带噪声执行，记录干净的标签</h2>
+    <p>执行时给关节目标加一个平滑的随机偏移（标准差 0.02 或 0.04 rad，夹住东西时减半），但写进数据的动作仍是原计划的干净目标。于是数据里出现了"被推偏了，怎么回到计划上"的样本。这类恢复示范 A 有 38 条，B 只有 31 条。</p>
+    <div class="row" id="t5-j"></div>
+    <canvas id="c5" aria-label="上：无扰动示范；下：DART 0.02 示范。实线为实际关节角，虚线为记录的动作"></canvas>
+    <p class="note">实线 = 实际关节角（观测），虚线 = 记录下来的动作标签。无扰动时两者只差 PD 跟踪的滞后；DART 下实线被推开，标签保持不变。前 1600 步。</p>
+  </section>
+
+  <!-- 6 -->
+  <section class="scene" id="s6">
+    <h2><span class="n">06 · 切块</span>一条示范怎样变成样本</h2>
+    <p>不重新仿真：把保存的仿真状态逐帧设回去，每 4 步渲染一次前视相机（take_000 的真实 RealSense 位姿和内参）和腕部相机。动作不变且关节静止的等待步骤只保留前 2 步。每个渲染步就是一个样本：</p>
+    <div class="math">x<sub>t</sub> = ( s<sub>t−1</sub>, s<sub>t</sub>, I<sub>t</sub><sup>front</sup>, I<sub>t</sub><sup>wrist</sup> ) &nbsp;⟶&nbsp; y<sub>t</sub> = ( a<sub>t</sub>, …, a<sub>t+15</sub> ) − q<sub>t</sub></div>
+    <p class="note" style="margin-top:-6px"><i>s</i> 是 25 维本体状态（关节角 9、关节速度 9、tcp 位姿 7），<i>a</i> 是 7 个关节目标加 1 个夹爪，关节部分写成相对当前关节角 <i>q<sub>t</sub></i> 的增量。推理时每块执行前 8 步，再重新预测。</p>
+    <canvas id="c6t" aria-label="示范时间轴：保留与去掉的步骤、渲染步、当前样本的观测窗口与动作块"></canvas>
+    <div class="row"><button id="t6-play">▶ 播放</button><input type="range" id="t6-r" min="0" max="93" value="30" aria-label="样本"><span class="ro" id="t6-ro"></span></div>
+    <div class="split">
+      <div class="imgs">
+        <figure><img id="i6f" alt="前视相机渲染，126×224"><figcaption>front 126×224</figcaption></figure>
+        <figure><img id="i6w" alt="腕部相机渲染，128×128"><figcaption>wrist 128×128</figcaption></figure>
+      </div>
+      <canvas id="c6" aria-label="这个样本的动作块：7 个关节的增量和夹爪，前 8 步执行"></canvas>
+    </div>
+    <p class="note">gen/run_000：2252 步，去掉 89 个等待步，渲染 563 帧。这里每 24 步嵌入一张图，A 的 96 条示范一共切出 56,387 个样本。训练时图像再做随机平移（前视 6 px，腕部 4 px）。</p>
+  </section>
+
+  <!-- 7 -->
+  <section class="scene" id="s7">
+    <h2><span class="n">07 · 账本</span>视频里真正流进训练数据的东西</h2>
+    <div class="ledger">
+      <div>
+        <h3 class="c-gold">来自人手视频</h3>
+        <ul>
+          <li><span>A + B</span><span>抓取范围框和放置范围框：8 个数</span></li>
+          <li><span>A + B</span><span>前视相机的位姿和内参，只来自 take_000</span></li>
+          <li><span>A + B</span><span>任务顺序：开门、拿罐、放入、关门（我看完视频后写进求解器）</span></li>
+          <li><span>仅 B</span><span>3 条手腕位置路径：接近 1.8 s，加上进腔前的搬运</span></li>
+        </ul>
+      </div>
+      <div>
+        <h3 class="c-blue">不来自视频</h3>
+        <ul>
+          <li><span>全部</span><span>每一个关节动作：IK 解出来，PhysX 执行</span></li>
+          <li><span>全部</span><span>门开到 90°（视频 57–75°）</span></li>
+          <li><span>全部</span><span>抓握几何、手的朝向、最后 10 cm 对准、插入炉腔</span></li>
+          <li><span>全部</span><span>微波炉的几何：来自单独的扫描</span></li>
+          <li><span>全部</span><span>示范条数：由种子数和求解器成功率决定</span></li>
+        </ul>
+      </div>
+    </div>
+    <div class="res">
+      <div><span class="lab">A · 只用求解器 · 96 条</span><span class="big c-blue">97%</span><span class="note">128 个起点，灰色地面</span></div>
+      <div><span class="lab">B · 人手引导 · 86 条</span><span class="big c-gold">59%</span><span class="note">抓取掉了 20 个点</span></div>
+      <div><span class="lab">A 抽成 B 的组成 · 86 条</span><span class="big c-blue">88%</span><span class="note">同样条数：人手路径一项就差 29 个点（p &lt; 0.0001）</span></div>
+    </div>
+    <p class="note">少 10 条示范花掉 9 个点（97 → 88%，p = 0.008），换成人手路径再花掉 29 个点（88 → 59%）。动作标签（关节目标）的 jerk：求解器段几乎为 0（分段线性插值），人手段中位数 13–127 rad/s³；按整个搬运窗口算，B 的训练集是 A 的 8 倍（7.4 对 0.9）。原因是路径点每 1 cm 一个，而手部跟踪的噪声有 1–2 cm，所以每一步的方向都在抖，求解器补的段和人手段的交接处也是跳变。问题出在路径的处理方式（平滑和时间参数化），不在示范条数，多录视频解决不了。</p>
+  </section>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(() => {
+const D = JSON.parse(document.getElementById('data').textContent);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const C = {}; ['bg','panel','rule','fg','dim','blue','gold','green','red','teal','violet'].forEach(k => C[k] = css('--' + k)); C.gold2 = css('--gold-2');
+const SERIF = '"STIX Two Text","Noto Serif SC",Georgia,serif', MONO = '"JetBrains Mono",ui-monospace,monospace';
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const lerp = (a, b, t) => a + (b - a) * t, clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+
+// ---------- canvas plumbing
+const scenes = [];
+function mk(id, aspect, aspectNarrow) {
+  const c = document.getElementById(id), ctx = c.getContext('2d');
+  const st = { c, ctx, w: 0, h: 0, draw: () => {} };
+  const fit = () => {
+    const w = c.clientWidth; if (!w) return;
+    const a = (w < 560 && aspectNarrow) ? aspectNarrow : aspect;
+    const h = Math.round(w / a), dpr = window.devicePixelRatio || 1;
+    if (w === st.w && h === st.h) return;
+    st.w = w; st.h = h; c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); c.style.height = h + 'px';
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0); st.draw();
+  };
+  new ResizeObserver(fit).observe(c); st.fit = fit; scenes.push(st); return st;
+}
+function viewport(rect, b, pad = 24) {           // equal-scale map of a world box into rect; y up
+  const s = Math.min((rect.w - 2 * pad) / (b.x1 - b.x0), (rect.h - 2 * pad) / (b.y1 - b.y0));
+  const ox = rect.x + (rect.w - s * (b.x1 - b.x0)) / 2, oy = rect.y + (rect.h - s * (b.y1 - b.y0)) / 2;
+  return { s, X: x => ox + (x - b.x0) * s, Y: y => oy + (b.y1 - y) * s, ix: px => b.x0 + (px - ox) / s, iy: py => b.y1 - (py - oy) / s };
+}
+function txt(ctx, s, x, y, o = {}) {
+  ctx.font = o.font || `13px ${MONO}`; ctx.fillStyle = o.color || C.dim; ctx.textAlign = o.align || 'left'; ctx.textBaseline = o.base || 'alphabetic'; ctx.fillText(s, x, y);
+}
+function poly(ctx, V, pts, o = {}) {
+  ctx.beginPath(); let started = false;
+  const n = o.frac == null ? pts.length : Math.max(0, Math.floor(pts.length * o.frac));
+  for (let i = 0; i < n; i++) { const p = pts[i]; if (!p) { started = false; continue; }
+    const x = V.X(p[o.ix ?? 0]), y = V.Y(p[o.iy ?? 1]); started ? ctx.lineTo(x, y) : ctx.moveTo(x, y); started = true; }
+  ctx.strokeStyle = o.color || C.fg; ctx.lineWidth = o.lw || 1.5; ctx.setLineDash(o.dash || []); ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.globalAlpha = o.alpha ?? 1;
+  ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha = 1;
+}
+function dot(ctx, x, y, r, fill, stroke, lw = 1.5) {
+  ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+  if (fill) { ctx.fillStyle = fill; ctx.fill(); } if (stroke) { ctx.strokeStyle = stroke; ctx.lineWidth = lw; ctx.stroke(); }
+}
+function clear(st) { st.ctx.fillStyle = C.panel; st.ctx.fillRect(0, 0, st.w, st.h); }
+function grid(ctx, V, b, step = 0.1) {
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; ctx.globalAlpha = .55;
+  for (let x = Math.ceil(b.x0 / step) * step; x <= b.x1 + 1e-9; x += step) { ctx.beginPath(); ctx.moveTo(V.X(x), V.Y(b.y0)); ctx.lineTo(V.X(x), V.Y(b.y1)); ctx.stroke(); }
+  for (let y = Math.ceil(b.y0 / step) * step; y <= b.y1 + 1e-9; y += step) { ctx.beginPath(); ctx.moveTo(V.X(b.x0), V.Y(y)); ctx.lineTo(V.X(b.x1), V.Y(y)); ctx.stroke(); }
+  ctx.globalAlpha = 1;
+}
+const MW = D.mw;
+function microwaveTop(ctx, V, qdeg = 0, o = {}) {
+  const q = qdeg * Math.PI / 180;
+  ctx.fillStyle = 'rgba(255,255,255,0.03)'; ctx.fillRect(V.X(0), V.Y(MW.depth), (MW.width) * V.s, MW.depth * V.s);
+  ctx.strokeStyle = C.dim; ctx.lineWidth = 1.2; ctx.strokeRect(V.X(0), V.Y(MW.depth), MW.width * V.s, MW.depth * V.s);
+  ctx.strokeStyle = C.rule; ctx.strokeRect(V.X(MW.cavity_x[0]), V.Y(MW.cavity_y[1]), (MW.cavity_x[1] - MW.cavity_x[0]) * V.s, (MW.cavity_y[1] - MW.cavity_y[0]) * V.s);
+  dot(ctx, V.X(MW.turntable[0]), V.Y(MW.turntable[1]), 0.12 * V.s, null, C.rule, 1);
+  // door: hinge at the origin, q > 0 swings out towards -y
+  const L = MW.door_len, ex = L * Math.cos(q), ey = -L * Math.sin(q);
+  ctx.strokeStyle = C.teal; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(V.X(0), V.Y(0)); ctx.lineTo(V.X(ex), V.Y(ey)); ctx.stroke();
+  const hx = MW.handle[0], hy = MW.handle[1], c = Math.cos(q), s = Math.sin(q);
+  dot(ctx, V.X(c * hx + s * hy), V.Y(-s * hx + c * hy), 3, C.teal);
+  if (o.label !== false) txt(ctx, 'microwave', V.X(MW.width / 2), V.Y(MW.depth) - 6, { align: 'center', font: `11px ${MONO}` });
+}
+function axes(ctx, V, x, y) {
+  ctx.strokeStyle = C.dim; ctx.lineWidth = 1; const L = 0.06 * V.s;
+  ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + L, y); ctx.moveTo(x, y); ctx.lineTo(x, y - L); ctx.stroke();
+  txt(ctx, 'x', x + L + 4, y + 4, { font: `italic 13px ${SERIF}` }); txt(ctx, 'y', x - 3, y - L - 5, { font: `italic 13px ${SERIF}` });
+}
+function takeButtons(id, keys, cur, on, labels) {
+  const el = document.getElementById(id); el.innerHTML = '';
+  keys.forEach((k, i) => { const b = document.createElement('button'); b.textContent = labels ? labels[i] : k; b.setAttribute('aria-pressed', k === cur);
+    b.onclick = () => { [...el.children].forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); on(k); }; el.appendChild(b); });
+}
+function player(btn, step) {        // a play/pause button driving step(dt) -> false to stop
+  let raf = 0, last = 0;
+  const stop = () => { cancelAnimationFrame(raf); raf = 0; btn.textContent = '▶ ' + btn.dataset.l; };
+  const tick = t => { const dt = last ? (t - last) / 1000 : 0; last = t; if (step(dt) === false) return stop(); raf = requestAnimationFrame(tick); };
+  btn.dataset.l = btn.textContent.replace('▶ ', '');
+  btn.onclick = () => { if (raf) return stop(); last = 0; btn.textContent = '❚❚ 暂停'; raf = requestAnimationFrame(tick); };
+  return { stop, get on() { return !!raf; } };
+}
+
+// ================= 1. one take
+const HAND = [[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[0,17],[17,18],[18,19],[19,20]];
+const frames = D.video.frames.map(src => { const im = new Image(); im.src = src; im.onload = () => s1.draw(); return im; });
+let tk1 = 'take_000', i1 = 149;
+const s1 = mk('c1', 2.05, 0.95), s1t = mk('c1t', 5.2, 3.2);
+const r1 = document.getElementById('t1-r'), ro1 = document.getElementById('t1-ro');
+takeButtons('t1-takes', ['take_000', 'take_001', 'take_002'], tk1, k => { tk1 = k; r1.max = D.takes[k].t.length - 1; i1 = Math.min(i1, +r1.max); r1.value = i1; s1.draw(); s1t.draw(); });
+s1.draw = () => {
+  const { ctx, w, h } = s1; clear(s1); const T = D.takes[tk1]; const i = i1, t = T.t[i];
+  const narrow = w < 560, hasVid = tk1 === 'take_000';
+  const vr = narrow ? { x: 0, y: 0, w, h: h * 0.42 } : { x: 0, y: 0, w: w * 0.5, h };
+  const tr = !hasVid ? { x: 0, y: 0, w, h } : narrow ? { x: 0, y: h * 0.42, w, h: h * 0.58 } : { x: w * 0.5, y: 0, w: w * 0.5, h };
+  if (hasVid) {
+    const fi = clamp(Math.round(t / D.video.dt), 0, frames.length - 1), im = frames[fi];
+    const pad = 14, ar = D.video.size[0] / D.video.size[1];
+    let iw = vr.w - 2 * pad, ih = iw / ar; if (ih > vr.h - 2 * pad - 18) { ih = vr.h - 2 * pad - 18; iw = ih * ar; }
+    const ix = vr.x + (vr.w - iw) / 2, iy = vr.y + pad;
+    if (im.complete && im.naturalWidth) ctx.drawImage(im, ix, iy, iw, ih);
+    const kp = D.video.kp[fi];
+    if (kp) {
+      ctx.strokeStyle = C.blue; ctx.lineWidth = 1.6;
+      HAND.forEach(([a, b]) => { ctx.beginPath(); ctx.moveTo(ix + kp[a][0] * iw, iy + kp[a][1] * ih); ctx.lineTo(ix + kp[b][0] * iw, iy + kp[b][1] * ih); ctx.stroke(); });
+      kp.forEach(p => dot(ctx, ix + p[0] * iw, iy + p[1] * ih, 1.8, C.fg));
+      dot(ctx, ix + (kp[4][0] + kp[8][0]) / 2 * iw, iy + (kp[4][1] + kp[8][1]) / 2 * ih, 4.5, C.gold, C.bg, 1.5);
+    }
+    txt(ctx, `frame ${fi * 15}  ·  ${kp ? 'MediaPipe: 21 keypoints' : 'MediaPipe: no hand'}`, ix, iy + ih + 16, { font: `11px ${MONO}`, color: kp ? C.dim : C.red });
+  }
+  const b = { x0: -0.08, x1: 0.68, y0: -0.48, y1: 0.36 };
+  const V = viewport(tr, b, 22); grid(ctx, V, b);
+  microwaveTop(ctx, V, T.door[i] || 0);
+  // events
+  dot(ctx, V.X(T.start[0]), V.Y(T.start[1]), 5, null, C.dim, 1); txt(ctx, 'start', V.X(T.start[0]) + 8, V.Y(T.start[1]) + 4, { font: `11px ${MONO}` });
+  dot(ctx, V.X(T.pick[0]), V.Y(T.pick[1]), 7, null, C.blue, 1.2); txt(ctx, 'pick', V.X(T.pick[0]) + 10, V.Y(T.pick[1]) + 4, { font: `11px ${MONO}`, color: C.blue });
+  dot(ctx, V.X(T.place[0]), V.Y(T.place[1]), 7, null, C.gold, 1.2); txt(ctx, 'place', V.X(T.place[0]) + 10, V.Y(T.place[1]) - 6, { font: `11px ${MONO}`, color: C.gold });
+  // pot
+  const pot = T.lid[i] || T.inside[i];
+  if (pot) dot(ctx, V.X(pot[0]), V.Y(pot[1]), 0.06 * V.s, 'rgba(177,137,232,0.22)', C.violet, 1.3);
+  // hand trail: last 3 s
+  const trail = []; for (let k = Math.max(0, i - 30); k <= i; k++) trail.push(T.hand[k]);
+  poly(ctx, V, trail, { color: C.gold, lw: 1.6, alpha: .7 });
+  const hp = T.hand[i];
+  if (hp) { dot(ctx, V.X(hp[0]), V.Y(hp[1]), 5, C.gold, C.bg); txt(ctx, `z ${hp[2].toFixed(2)} m`, V.X(hp[0]) + 9, V.Y(hp[1]) - 8, { color: C.gold, font: `11px ${MONO}` }); }
+  axes(ctx, V, tr.x + 24, tr.y + tr.h - 22);
+  txt(ctx, 'microwave frame, top view', tr.x + tr.w - 12, tr.y + 20, { align: 'right', font: `11px ${MONO}` });
+  ro1.textContent = `t = ${t.toFixed(1)} s · door ${T.door[i] == null ? '–' : T.door[i].toFixed(0) + '°'} · hand ${hp ? 'tracked' : 'lost'}`;
+};
+s1t.draw = () => {
+  const { ctx, w, h } = s1t; clear(s1t); const T = D.takes[tk1], n = T.t.length, tmax = T.t[n - 1];
+  const L = 92, R = 14, X = t => L + (w - L - R) * t / tmax;
+  const rows = [['door °', C.teal], ['hand', C.gold], ['lifted', C.violet], ['in cavity', C.green]];
+  const top = 10, rh = (h - top - 22) / 5;
+  const yd = v => top + rh * 2 - (v / 100) * rh * 2;       // door curve gets two rows
+  txt(ctx, 'door °', 10, top + rh + 4, { font: `11px ${MONO}`, color: C.teal });
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; [0, 50, 100].forEach(v => { ctx.beginPath(); ctx.moveTo(L, yd(v)); ctx.lineTo(w - R, yd(v)); ctx.stroke(); txt(ctx, v, L - 6, yd(v) + 4, { align: 'right', font: `10px ${MONO}` }); });
+  ctx.beginPath(); T.door.forEach((v, k) => { const x = X(T.t[k]), y = yd(clamp(v ?? 0, 0, 100)); k ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }); ctx.strokeStyle = C.teal; ctx.lineWidth = 1.6; ctx.stroke();
+  const band = (row, on, col) => { const y = top + rh * (row + 1) + 4, bh = rh - 8; txt(ctx, rows[row][0], 10, y + bh / 2 + 4, { font: `11px ${MONO}`, color: col });
+    ctx.fillStyle = C.rule; ctx.fillRect(L, y, w - L - R, bh); ctx.fillStyle = col;
+    for (let k = 0; k < n - 1; k++) if (on(k)) ctx.fillRect(X(T.t[k]), y, X(T.t[k + 1]) - X(T.t[k]) + .5, bh); };
+  band(1, k => !!T.hand[k], C.gold); band(2, k => T.lifted[k], C.violet); band(3, k => !!T.inside[k], C.green);
+  [[T.t_pick, 'pick', C.blue], [T.t_place, 'place', C.gold]].forEach(([t, l, c]) => { ctx.strokeStyle = c; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(X(t), top); ctx.lineTo(X(t), h - 18); ctx.stroke(); ctx.setLineDash([]); txt(ctx, l, X(t), h - 5, { align: 'center', font: `10px ${MONO}`, color: c }); });
+  const x = X(T.t[i1]); ctx.strokeStyle = C.fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, h - 18); ctx.stroke();
+  txt(ctx, `${Math.round(T.valid_frac * 100)}% of frames with a hand`, w - R, h - 5, { align: 'right', font: `10px ${MONO}` });
+  s1t.X = X; s1t.L = L; s1t.R = R; s1t.tmax = tmax;
+};
+const set1 = i => { i1 = clamp(i, 0, D.takes[tk1].t.length - 1); r1.value = i1; s1.draw(); s1t.draw(); };
+r1.oninput = () => set1(+r1.value);
+const scrub1 = e => { const r = s1t.c.getBoundingClientRect(); const t = (e.clientX - r.left - s1t.L) / (s1t.w - s1t.L - s1t.R) * s1t.tmax; set1(Math.round(t / 0.1)); };
+s1t.c.addEventListener('pointerdown', e => { s1t.c.setPointerCapture(e.pointerId); scrub1(e); });
+s1t.c.addEventListener('pointermove', e => { if (e.buttons) scrub1(e); });
+let acc1 = 0; player(document.getElementById('t1-play'), dt => { acc1 += dt * 10; const k = Math.floor(acc1); acc1 -= k; if (i1 + k >= D.takes[tk1].t.length) { set1(0); return false; } set1(i1 + k); });
+
+// ================= 2. sampling regions
+const s2 = mk('c2', 1.0), s2d = mk('c2d', 1.0);
+const TK = ['take_000', 'take_001', 'take_002'];
+const picks = TK.map(k => D.takes[k].pick), places = TK.map(k => D.takes[k].place);
+const box = (P, m) => ({ x0: Math.min(...P.map(p => p[0])) - m, x1: Math.max(...P.map(p => p[0])) + m, y0: Math.min(...P.map(p => p[1])) - m, y1: Math.max(...P.map(p => p[1])) + m });
+const PB = box(picks, 0.02), QB = box(places, 0.02);
+let prog2 = 1;
+s2.draw = () => {
+  const { ctx, w, h } = s2; clear(s2);
+  const b = { x0: -0.04, x1: 0.6, y0: -0.4, y1: 0.36 }, V = viewport({ x: 0, y: 0, w, h }, b, 22); grid(ctx, V, b);
+  microwaveTop(ctx, V, 90);
+  const rect = (B, col, dash, fill) => { ctx.setLineDash(dash); ctx.strokeStyle = col; ctx.lineWidth = 1.3; if (fill) { ctx.fillStyle = fill; ctx.fillRect(V.X(B.x0), V.Y(B.y1), (B.x1 - B.x0) * V.s, (B.y1 - B.y0) * V.s); } ctx.strokeRect(V.X(B.x0), V.Y(B.y1), (B.x1 - B.x0) * V.s, (B.y1 - B.y0) * V.s); ctx.setLineDash([]); };
+  rect(PB, C.gold, [5, 4], 'rgba(240,195,92,0.06)'); rect(QB, C.gold, [5, 4], 'rgba(240,195,92,0.06)');
+  rect(box(picks, 0), C.gold, [], null); rect(box(places, 0), C.gold, [], null);
+  txt(ctx, 'pick box', V.X(PB.x0), V.Y(PB.y0) + 15, { color: C.gold, font: `11px ${MONO}` });
+  txt(ctx, 'place box', V.X(QB.x1) + 6, V.Y(QB.y0) + 4, { color: C.gold, font: `11px ${MONO}` });
+  const n = Math.floor(D.gen.length * prog2);
+  D.gen.slice(0, n).forEach((g, k) => {
+    const fresh = k >= n - 3 && prog2 < 1;
+    ctx.globalAlpha = fresh ? .9 : .32; ctx.strokeStyle = g.ok ? C.blue : C.red; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(V.X(g.pot[0]), V.Y(g.pot[1])); ctx.lineTo(V.X(g.place[0]), V.Y(g.place[1])); ctx.stroke(); ctx.globalAlpha = 1;
+    dot(ctx, V.X(g.pot[0]), V.Y(g.pot[1]), fresh ? 4 : 2.6, g.ok ? C.blue : null, g.ok ? null : C.red);
+    dot(ctx, V.X(g.place[0]), V.Y(g.place[1]), fresh ? 3.4 : 2.2, g.ok ? C.blue : null, g.ok ? null : C.red);
+  });
+  picks.forEach((p, k) => { dot(ctx, V.X(p[0]), V.Y(p[1]), 5.5, C.gold, C.bg); txt(ctx, k, V.X(p[0]) + 7, V.Y(p[1]) - 6, { color: C.gold, font: `11px ${MONO}` }); });
+  places.forEach((p, k) => { dot(ctx, V.X(p[0]), V.Y(p[1]), 5.5, C.gold, C.bg); txt(ctx, k, V.X(p[0]) + 7, V.Y(p[1]) - 6, { color: C.gold, font: `11px ${MONO}` }); });
+  const ok = D.gen.slice(0, n).filter(g => g.ok).length;
+  document.getElementById('t2-ro').textContent = `${n} / 60 sampled · ${ok} succeeded · margin 2 cm`;
+  axes(ctx, V, 26, h - 22);
+};
+s2d.draw = () => {
+  const { ctx, w, h } = s2d; clear(s2d);
+  const cx = w * 0.28, cy = h * 0.62, R = Math.min(w * 0.6, h * 0.5);
+  const at = d => [cx + R * Math.cos(-d * Math.PI / 180), cy + R * Math.sin(-d * Math.PI / 180)];
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; for (let d = 0; d <= 90; d += 15) { const [x, y] = at(d); ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); }
+  ctx.beginPath(); ctx.arc(cx, cy, R, -Math.PI / 2, 0); ctx.stroke();
+  [0, 30, 60, 90].forEach(d => { const [x, y] = at(d); const [lx, ly] = [cx + (R + 16) * Math.cos(-d * Math.PI / 180), cy + (R + 16) * Math.sin(-d * Math.PI / 180)]; txt(ctx, d + '°', lx, ly + 4, { align: 'center', font: `11px ${MONO}` }); });
+  [[75, 'take_000'], [60, 'take_001'], [57, 'take_002']].forEach(([d, l], k) => { const [x, y] = at(d); ctx.strokeStyle = C.gold; ctx.lineWidth = 2; ctx.globalAlpha = .85; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x, y); ctx.stroke(); ctx.globalAlpha = 1; });
+  const [x9, y9] = at(90); ctx.strokeStyle = C.blue; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(x9, y9); ctx.stroke();
+  dot(ctx, cx, cy, 4, C.teal);
+  txt(ctx, 'door opening', 16, 26, { font: `15px ${SERIF}`, color: C.fg });
+  const lx = cx + R * 0.55, ly = cy - R * 1.02;
+  txt(ctx, 'human  57° · 60° · 75°', w - 14, h - 40, { align: 'right', color: C.gold, font: `12px ${MONO}` });
+  txt(ctx, 'solver  90° (every demo)', w - 14, h - 20, { align: 'right', color: C.blue, font: `12px ${MONO}` });
+};
+player(document.getElementById('t2-play'), (() => { let t = 0; return dt => { if (dt === 0) { t = 0; } t += dt; prog2 = clamp(t / 4, 0, 1); s2.draw(); if (prog2 >= 1) { t = 0; return false; } }; })());
+
+// ================= 3. warp the human path
+const s3 = mk('c3', 1.75, 0.85);
+const W3 = {}; TK.forEach(k => { const T = D.takes[k]; W3[k] = { pick: T.pick.slice(), place: T.place.slice() }; });
+let tk3 = 'take_000', drag3 = null;
+takeButtons('t3-takes', TK, tk3, k => { tk3 = k; s3.draw(); });
+function warp(carry, p0, q0, p1, q1) {
+  const s = [0]; for (let i = 1; i < carry.length; i++) s.push(s[i - 1] + Math.hypot(carry[i][0] - carry[i - 1][0], carry[i][1] - carry[i - 1][1], carry[i][2] - carry[i - 1][2]));
+  const S = Math.max(s[s.length - 1], 1e-9), d0 = [p1[0] - p0[0], p1[1] - p0[1]], d1 = [q1[0] - q0[0], q1[1] - q0[1]];
+  return carry.map((p, i) => { const w = s[i] / S; return [p[0] + (1 - w) * d0[0] + w * d1[0], p[1] + (1 - w) * d0[1] + w * d1[1], p[2], w]; });
+}
+const inBox = (p, B) => p[0] >= B.x0 && p[0] <= B.x1 && p[1] >= B.y0 && p[1] <= B.y1;
+let V3 = null, Vz = null;
+s3.draw = () => {
+  const { ctx, w, h } = s3; clear(s3); const T = D.takes[tk3], S = W3[tk3];
+  const narrow = w < 560, top = narrow ? { x: 0, y: 0, w, h: h * 0.66 } : { x: 0, y: 0, w: w * 0.64, h }, side = narrow ? { x: 0, y: h * 0.66, w, h: h * 0.34 } : { x: w * 0.64, y: 0, w: w * 0.36, h };
+  const b = { x0: -0.04, x1: 0.66, y0: -0.4, y1: 0.34 }; const V = V3 = viewport(top, b, 20); grid(ctx, V, b);
+  microwaveTop(ctx, V, 90);
+  const rect = (B, col) => { ctx.setLineDash([4, 4]); ctx.strokeStyle = col; ctx.lineWidth = 1; ctx.globalAlpha = .5; ctx.strokeRect(V.X(B.x0), V.Y(B.y1), (B.x1 - B.x0) * V.s, (B.y1 - B.y0) * V.s); ctx.globalAlpha = 1; ctx.setLineDash([]); };
+  rect(PB, C.gold); rect(QB, C.gold);
+  if (T.carry) poly(ctx, V, T.carry, { color: C.dim, dash: [4, 4], lw: 1.2 });
+  if (T.approach) poly(ctx, V, T.approach.map(p => [p[0] + T.pick[0], p[1] + T.pick[1]]), { color: C.dim, dash: [2, 4], lw: 1.2 });
+  // warped
+  if (T.approach) poly(ctx, V, T.approach.map(p => [p[0] + S.pick[0], p[1] + S.pick[1]]), { color: C.teal, lw: 2.4 });
+  let wc = null;
+  if (T.carry) {
+    wc = warp(T.carry, T.pick, T.place, S.pick, S.place);
+    for (let i = 1; i < wc.length; i++) { const a = wc[i - 1], c = wc[i]; ctx.strokeStyle = mixc(C.blue, C.gold, c[3]); ctx.lineWidth = 2.6; ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(V.X(a[0]), V.Y(a[1])); ctx.lineTo(V.X(c[0]), V.Y(c[1])); ctx.stroke(); }
+    const e = wc[wc.length - 1]; ctx.strokeStyle = C.blue; ctx.setLineDash([2, 3]); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(V.X(e[0]), V.Y(e[1])); ctx.lineTo(V.X(S.place[0]), V.Y(S.place[1])); ctx.stroke(); ctx.setLineDash([]);
+    txt(ctx, 'solver: insert', (V.X(e[0]) + V.X(S.place[0])) / 2 + 8, (V.Y(e[1]) + V.Y(S.place[1])) / 2, { color: C.blue, font: `10px ${MONO}` });
+  } else txt(ctx, 'this take has no usable carry', top.x + 20, top.y + 24, { color: C.red });
+  dot(ctx, V.X(T.pick[0]), V.Y(T.pick[1]), 7, null, C.dim, 1.2); dot(ctx, V.X(T.place[0]), V.Y(T.place[1]), 7, null, C.dim, 1.2);
+  const okP = inBox(S.pick, PB), okQ = inBox(S.place, QB);
+  dot(ctx, V.X(S.pick[0]), V.Y(S.pick[1]), 8, okP ? C.blue : C.red, C.bg, 2); dot(ctx, V.X(S.place[0]), V.Y(S.place[1]), 8, okQ ? C.gold : C.red, C.bg, 2);
+  txt(ctx, 'new pick', V.X(S.pick[0]) + 12, V.Y(S.pick[1]) + 4, { color: okP ? C.blue : C.red, font: `11px ${MONO}` });
+  txt(ctx, 'new place', V.X(S.place[0]) + 12, V.Y(S.place[1]) + 4, { color: okQ ? C.gold : C.red, font: `11px ${MONO}` });
+  axes(ctx, V, top.x + 24, top.y + top.h - 22);
+  // side panel: z along the carry, unchanged by the warp
+  ctx.strokeStyle = C.rule; ctx.beginPath(); ctx.moveTo(side.x + .5, side.y + 10); ctx.lineTo(side.x + .5, side.y + side.h - 10); ctx.stroke();
+  txt(ctx, 'carry height z vs. fraction w', side.x + 16, side.y + 24, { font: `12px ${MONO}`, color: C.fg });
+  if (wc) {
+    const L = side.x + 46, Rr = side.x + side.w - 16, Tt = side.y + 40, B = side.y + side.h - 30, zmax = 0.3;
+    const X = w_ => L + (Rr - L) * w_, Y = z => B - (B - Tt) * z / zmax;
+    ctx.strokeStyle = C.rule; [0, 0.1, 0.2, 0.3].forEach(z => { ctx.beginPath(); ctx.moveTo(L, Y(z)); ctx.lineTo(Rr, Y(z)); ctx.stroke(); txt(ctx, z.toFixed(1), L - 6, Y(z) + 4, { align: 'right', font: `10px ${MONO}` }); });
+    for (let i = 1; i < wc.length; i++) { ctx.strokeStyle = mixc(C.blue, C.gold, wc[i][3]); ctx.lineWidth = 2.4; ctx.beginPath(); ctx.moveTo(X(wc[i - 1][3]), Y(wc[i - 1][2])); ctx.lineTo(X(wc[i][3]), Y(wc[i][2])); ctx.stroke(); }
+    txt(ctx, 'w = 0', L, B + 16, { font: `10px ${MONO}` }); txt(ctx, 'w = 1', Rr, B + 16, { align: 'right', font: `10px ${MONO}` });
+    const zm = Math.max(...wc.map(p => p[2])); txt(ctx, `max z ${(zm * 100).toFixed(1)} cm`, Rr, Tt - 2, { align: 'right', color: C.gold, font: `11px ${MONO}` });
+  }
+};
+function mixc(a, b, t) { const p = s => [1, 3, 5].map(i => parseInt(s.slice(i, i + 2), 16)); const A = p(a), B = p(b); return `rgb(${A.map((v, i) => Math.round(lerp(v, B[i], t))).join(',')})`; }
+const pt3 = e => { const r = s3.c.getBoundingClientRect(); return [V3.ix(e.clientX - r.left), V3.iy(e.clientY - r.top), e.clientX - r.left, e.clientY - r.top]; };
+s3.c.addEventListener('pointerdown', e => { const [x, y, px, py] = pt3(e), S = W3[tk3];
+  const d = k => Math.hypot(V3.X(S[k][0]) - px, V3.Y(S[k][1]) - py); const k = d('pick') < d('place') ? 'pick' : 'place';
+  if (d(k) < 28) { drag3 = k; s3.c.setPointerCapture(e.pointerId); } });
+s3.c.addEventListener('pointermove', e => { if (!drag3) { const [, , px, py] = pt3(e), S = W3[tk3]; const near = ['pick', 'place'].some(k => Math.hypot(V3.X(S[k][0]) - px, V3.Y(S[k][1]) - py) < 28); s3.c.style.cursor = near ? 'grab' : 'default'; return; }
+  const [x, y] = pt3(e); W3[tk3][drag3] = [clamp(x, -0.02, 0.64), clamp(y, -0.38, 0.32)]; s3.draw(); });
+s3.c.addEventListener('pointerup', () => drag3 = null);
+
+// ================= 4. A vs B, step by step (pairs/run_XXX.json, loaded on demand)
+const PAIRS = D.pairs;                 // index: run, take, parts, A, B, train
+const s4 = mk('c4', 2.0, 0.8), s4p = mk('c4ph', 3.4, 1.6);
+const r4 = document.getElementById('t4-r'); let u4 = 0.56, byPhase = true, P4 = null, run4 = PAIRS.some(p => p.run === 3) ? 3 : PAIRS[0].run;
+const cache4 = {};
+const SRC = () => [C.blue, C.gold2, C.gold];
+const modeName = p => !p ? '—' : p.approach ? '接近+搬运' : p.carry ? '只有搬运' : '退回纯求解器';
+(() => { const el = document.getElementById('t4-runs');
+  PAIRS.forEach(p => { const b = document.createElement('button'); b.setAttribute('aria-pressed', p.run === run4);
+    b.innerHTML = `run_${String(p.run).padStart(3, '0')} · ${p.take.replace('take_', 't')} · ${modeName(p.parts)} · <span class="${p.A ? 'c-green' : 'c-red'}">A${p.A ? '✓' : '✗'}</span> <span class="${p.B ? 'c-green' : 'c-red'}">B${p.B ? '✓' : '✗'}</span>`;
+    b.onclick = () => { [...el.children].forEach(x => x.setAttribute('aria-pressed', 'false')); b.setAttribute('aria-pressed', 'true'); load4(p.run); }; el.appendChild(b); }); })();
+async function load4(run) {
+  run4 = run;
+  if (!cache4[run]) {
+    document.getElementById('t4-note').textContent = `载入 run_${String(run).padStart(3, '0')} …`;
+    try { const r = await fetch(`pairs/run_${String(run).padStart(3, '0')}.json`); if (!r.ok) throw new Error(r.status); cache4[run] = await r.json(); }
+    catch (e) { document.getElementById('t4-note').textContent = `这个构型的数据没能载入（${e.message}）。刷新页面再试一次。`; return; }
+  }
+  if (run !== run4) return;
+  P4 = cache4[run]; render4();
+}
+// global progress u in [0, 1] -> a step of each demonstration. By phase: the same fraction of
+// the same phase (both have the same phase sequence until one fails); else by fraction of steps.
+function stepOf(arm, u) {
+  const P = P4[arm], ph = P.phases, nph = Math.max(P4.A.phases.length, P4.B.phases.length);
+  if (!byPhase) return Math.min(P.n - 1, Math.floor(u * (P.n - 1)));
+  const x = u * nph, k = Math.min(Math.floor(x), nph - 1), f = x - k;
+  if (k >= ph.length) return P.n - 1;
+  const t0 = k ? ph[k - 1].t : 0, t1 = ph[k].t; return Math.min(P.n - 1, Math.round(t0 + (t1 - t0) * f));
+}
+const phaseAt = (P, s) => P.phases.findIndex(p => s < p.t || (s === P.n - 1 && p.t >= s));
+function frameAt(P, s) { let k = Math.floor(s / 12) * 12; while (k > 0 && !P.frames[k]) k -= 12; return P.frames[k] || P.frames[Object.keys(P.frames)[0]]; }
+function render4() {
+  if (!P4) return;
+  ['A', 'B'].forEach(arm => {
+    const P = P4[arm], s = stepOf(arm, u4), col = document.getElementById('t4-' + arm), f = frameAt(P, s);
+    col.querySelector('[data-k=front]').src = f[0]; col.querySelector('[data-k=wrist]').src = f[1];
+    const k = phaseAt(P, s), ph = P.phases[k >= 0 ? k : P.phases.length - 1], src = P.src[Math.floor(s / 4)] || 0;
+    col.querySelector('[data-k=phase]').innerHTML = `step ${s} · ${ph.name}${ph.ok ? '' : ' <span class="c-red">✗ 失败</span>'} · <span style="color:${SRC()[src]}">${['求解器', '人手接近', '人手搬运'][src]}</span>`;
+    col.querySelector('[data-k=badge]').innerHTML = `${P.success ? '<span class="c-green">成功</span>' : '<span class="c-red">失败</span>'} · ${P.n} 步`;
+  });
+  const sA = P4.A.stats, sB = P4.B.stats, cm = x => x == null ? '–' : (x * 100).toFixed(1) + ' cm', m = x => x == null ? '–' : x.toFixed(2) + ' m';
+  const tr = P4.B.track || {};
+  // how far the solver's clamps moved the human approach: raw point vs commanded point, same index
+  const ra = (P4.B.raw || {}).approach, ta = (P4.B.target || {}).approach;
+  const clampMove = ra && ta && ra.length === ta.length ? ra.reduce((acc, p, i) => acc + Math.hypot(p[0] - ta[i][0], p[1] - ta[i][1], p[2] - ta[i][2]), 0) / ra.length : null;
+  document.getElementById('t4-stats').innerHTML = `
+    <div><span class="lab">搬运路径长度</span><span><b class="c-blue">${m(sA.carry_m)}</b> / <b class="c-gold">${m(sB.carry_m)}</b></span></div>
+    <div><span class="lab">搬运最高点</span><span><b class="c-blue">${cm(sA.carry_zmax)}</b> / <b class="c-gold">${cm(sB.carry_zmax)}</b></span></div>
+    <div><span class="lab">B 中人手引导的步数</span><span><b class="c-gold">${sB.human_steps}</b> / ${sB.steps}（${(100 * sB.human_steps / sB.steps).toFixed(0)}%）</span></div>
+    <div><span class="lab">B 跟踪人手目标的误差（中位数）</span><span>接近 ${tr.approach != null ? cm(tr.approach) : '–'} · 搬运 ${tr.carry != null ? cm(tr.carry) : '–'}</span></div>
+    <div><span class="lab">B 的标签 jerk 中位数：人手段 / 求解器段</span><span>${P4.B.jerk_med.human_act != null ? '<b class="c-gold">' + P4.B.jerk_med.human_act.toFixed(0) + '</b> / <b class="c-blue">' + P4.B.jerk_med.solver_act.toFixed(1) + '</b> rad/s³' : '–'}</span></div>
+    <div><span class="lab">人手接近被截断，平均移动</span><span>${clampMove != null ? '<b class="c-gold">' + cm(clampMove) + '</b>' : '–（这次没用接近路径）'}</span></div>`;
+  const tA = P4.train.A, tB = P4.train.B, diff = (tA !== P4.A.success) || (tB !== P4.B.success);
+  document.getElementById('t4-note').innerHTML = `构型：罐子 (${P4.pot.join(', ')})，放置 (${P4.place.join(', ')})，人手来自 ${P4.take}，B 用了：${modeName(P4.B.parts)}。` +
+    ` 这里是为了记录阶段边界在台式机上重新解的；训练数据里这一构型 A ${tA ? '成功' : '失败'}、B ${tB ? '成功' : '失败'}（B 的数据是在 Spark 上生成的）。` +
+    (diff ? ' <span class="c-red">结果和训练数据不一致：两台机器的 PhysX 不是逐位相同的，同一构型可能一边成功一边失败。</span>' : '');
+  s4.draw(); s4p.draw();
+}
+s4p.draw = () => {
+  const { ctx, w, h } = s4p; clear(s4p); if (!P4) return;
+  const L = 22, R = 10, half = h / 2, rows = [['A', 10], ['B', half + 6]], rh = half * 0.34, jh = half * 0.34;
+  const jmax = Math.log10(1 + Math.max(...P4.A.jerk_act, ...P4.B.jerk_act));
+  const nph = Math.max(P4.A.phases.length, P4.B.phases.length);
+  rows.forEach(([arm, y]) => {
+    const P = P4[arm];
+    const X = byPhase ? (s => { const k = phaseAt(P, s), kk = k < 0 ? P.phases.length - 1 : k, t0 = kk ? P.phases[kk - 1].t : 0, t1 = P.phases[kk].t; return L + (w - L - R) * (kk + (s - t0) / Math.max(1, t1 - t0)) / nph; })
+                      : (s => L + (w - L - R) * s / (P.n - 1));
+    txt(ctx, arm, 4, y + rh / 2 + 4, { color: arm === 'A' ? C.blue : C.gold, font: `12px ${MONO}` });
+    for (let i = 0; i < P.src.length; i++) { const s0 = i * 4, s1 = Math.min(P.n - 1, s0 + 4); ctx.fillStyle = SRC()[P.src[i]]; ctx.globalAlpha = P.src[i] ? .95 : .38; ctx.fillRect(X(s0), y, Math.max(1, X(s1) - X(s0) + .4), rh); }
+    ctx.globalAlpha = 1;
+    P.phases.forEach((p, k) => { const x = X(Math.max(0, p.t - 1)); ctx.strokeStyle = C.panel; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + rh); ctx.stroke(); if (!p.ok) { ctx.fillStyle = C.red; ctx.fillRect(x - 3, y - 4, 6, rh + 8); } });
+    // jerk of the joint-target labels, log scale, under the band
+    const jy = y + rh + 18, jb = jy + jh; ctx.strokeStyle = C.rule; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(L, jb); ctx.lineTo(w - R, jb); ctx.stroke();
+    for (let i = 0; i < P.jerk_act.length; i++) { const v = Math.log10(1 + P.jerk_act[i]) / jmax; if (v <= 0) continue; const s0 = i * 4, s1 = Math.min(P.n - 1, s0 + 4);
+      ctx.fillStyle = SRC()[P.src[i]]; ctx.globalAlpha = P.src[i] ? 1 : .7; ctx.fillRect(X(s0), jb - v * jh, Math.max(1, X(s1) - X(s0)), v * jh); }
+    ctx.globalAlpha = 1;
+    txt(ctx, 'jerk', 2, jb - 2, { font: `9px ${MONO}` });
+    const s = stepOf(arm, u4), x = X(s); ctx.strokeStyle = C.fg; ctx.lineWidth = 1.6; ctx.beginPath(); ctx.moveTo(x, y - 4); ctx.lineTo(x, jb); ctx.stroke();
+    if (arm === 'B' || w > 700) {
+      const marks = [['开门', 'open to'], ['拿罐', 'reach, grasp'], ['搬运', /^carry|^across, high/], ['放入', 'in, down'], ['关门', /^shut$/]];
+      marks.forEach(([lab, key]) => { const p = P.phases.find(q => typeof key === 'string' ? q.name.startsWith(key) : key.test(q.name)); if (!p) return; const k = P.phases.indexOf(p), t0 = k ? P.phases[k - 1].t : 0;
+        txt(ctx, lab, (X(t0) + X(Math.max(t0, p.t - 1))) / 2, y + rh + 13, { align: 'center', font: `10px ${SERIF}`, color: C.dim }); });
+    }
+  });
+};
+s4.draw = () => {
+  const { ctx, w, h } = s4; clear(s4); if (!P4) { txt(ctx, '载入中…', w / 2, h / 2, { align: 'center' }); return; }
+  const narrow = w < 560, A = narrow ? { x: 0, y: 0, w, h: h * 0.55 } : { x: 0, y: 0, w: w * 0.46, h }, B = narrow ? { x: 0, y: h * 0.55, w, h: h * 0.45 } : { x: w * 0.46, y: 0, w: w * 0.54, h };
+  const bt = { x0: -0.05, x1: 0.62, y0: -0.48, y1: 0.34 }, V = viewport(A, bt, 18); grid(ctx, V, bt);
+  const sA = stepOf('A', u4), sB = stepOf('B', u4);
+  microwaveTop(ctx, V, P4.B.door[Math.floor(sB / 4)] || 0);
+  const sideB = { x0: -0.5, x1: 0.36, y0: -0.02, y1: 0.4 }, Vs = viewport(B, sideB, 22);
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; for (let z = 0; z <= 0.4001; z += 0.1) { ctx.beginPath(); ctx.moveTo(Vs.X(sideB.x0), Vs.Y(z)); ctx.lineTo(Vs.X(sideB.x1), Vs.Y(z)); ctx.stroke(); txt(ctx, z.toFixed(1), Vs.X(sideB.x0) - 4, Vs.Y(z) + 4, { align: 'right', font: `10px ${MONO}` }); }
+  ctx.strokeStyle = C.dim; ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(Vs.X(sideB.x0), Vs.Y(0)); ctx.lineTo(Vs.X(sideB.x1), Vs.Y(0)); ctx.stroke();
+  ctx.strokeRect(Vs.X(0), Vs.Y(0.27), 0.32 * Vs.s, 0.27 * Vs.s); ctx.strokeStyle = C.rule; ctx.strokeRect(Vs.X(0), Vs.Y(0.236), 0.29 * Vs.s, 0.2 * Vs.s);
+  txt(ctx, 'top view (x, y)', A.x + A.w - 12, A.y + 18, { align: 'right', font: `11px ${MONO}` }); txt(ctx, 'side view (y, z)', B.x + B.w - 12, B.y + 18, { align: 'right', font: `11px ${MONO}` });
+  // raw human paths (before the clamps) and the commanded points
+  const raw = P4.B.raw || {}, tg = P4.B.target || {};
+  ['approach', 'carry'].forEach(k => { if (raw[k]) { poly(ctx, V, raw[k], { color: C.gold, dash: [3, 4], lw: 1.1, alpha: .6 }); poly(ctx, Vs, raw[k], { color: C.gold, dash: [3, 4], lw: 1.1, alpha: .6, ix: 1, iy: 2 }); } });
+  // A: thin blue, whole run
+  poly(ctx, V, P4.A.tcp, { color: C.blue, lw: 1.1, alpha: .45 }); poly(ctx, Vs, P4.A.tcp, { color: C.blue, lw: 1.1, alpha: .45, ix: 1, iy: 2 });
+  // B: coloured by source, up to the current step
+  const nB = Math.floor(sB / 4) + 1, cols = SRC();
+  for (let i = 1; i < Math.min(nB, P4.B.tcp.length); i++) {
+    const a = P4.B.tcp[i - 1], b = P4.B.tcp[i], sc = P4.B.src[i]; ctx.strokeStyle = cols[sc]; ctx.globalAlpha = sc ? 1 : .8; ctx.lineWidth = sc ? 2.8 : 1.6; ctx.lineCap = 'round';
+    ctx.beginPath(); ctx.moveTo(V.X(a[0]), V.Y(a[1])); ctx.lineTo(V.X(b[0]), V.Y(b[1])); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(Vs.X(a[1]), Vs.Y(a[2])); ctx.lineTo(Vs.X(b[1]), Vs.Y(b[2])); ctx.stroke();
+  }
+  ctx.globalAlpha = 1;
+  ['approach', 'carry'].forEach(k => (tg[k] || []).forEach(p => { dot(ctx, V.X(p[0]), V.Y(p[1]), 2.6, null, k === 'carry' ? C.gold : C.gold2, 1); dot(ctx, Vs.X(p[1]), Vs.Y(p[2]), 2.6, null, k === 'carry' ? C.gold : C.gold2, 1); }));
+  const pa = P4.A.tcp[Math.floor(sA / 4)], pb = P4.B.tcp[Math.min(P4.B.tcp.length - 1, Math.floor(sB / 4))];
+  dot(ctx, V.X(pa[0]), V.Y(pa[1]), 4.5, C.blue, C.bg); dot(ctx, Vs.X(pa[1]), Vs.Y(pa[2]), 4.5, C.blue, C.bg);
+  dot(ctx, V.X(pb[0]), V.Y(pb[1]), 5, C.gold, C.bg); dot(ctx, Vs.X(pb[1]), Vs.Y(pb[2]), 5, C.gold, C.bg);
+  const pp = P4.B.pot[Math.min(P4.B.pot.length - 1, Math.floor(sB / 4))]; dot(ctx, V.X(pp[0]), V.Y(pp[1]), 0.06 * V.s, 'rgba(177,137,232,0.16)', C.violet, 1);
+  axes(ctx, V, A.x + 24, A.y + A.h - 22);
+};
+r4.oninput = () => { u4 = r4.value / 1000; render4(); };
+document.getElementById('t4-align').onclick = e => { byPhase = !byPhase; e.target.setAttribute('aria-pressed', byPhase); e.target.textContent = byPhase ? '按阶段对齐' : '按步数对齐'; render4(); };
+player(document.getElementById('t4-play'), dt => { if (u4 >= 1) u4 = 0; u4 = Math.min(1, u4 + dt / 30); r4.value = u4 * 1000; render4(); if (u4 >= 1) return false; });
+
+// ================= 5. DART
+const s5 = mk('c5', 2.2, 1.0); let j5 = 1;
+takeButtons('t5-j', [0, 1, 2, 3, 4, 5, 6], 1, k => { j5 = k; s5.draw(); }, ['J1', 'J2', 'J3', 'J4', 'J5', 'J6', 'J7']);
+s5.draw = () => {
+  const { ctx, w, h } = s5; clear(s5);
+  const panels = [['no perturbation · gen/run_000', D.clean], [`DART ${D.dart.noise} rad · gen_dart02/run_000`, D.dart]];
+  const L = 54, R = 14, ph = (h - 30) / 2;
+  panels.forEach(([lab, P], k) => {
+    const y0 = 14 + k * (ph + 6), y1 = y0 + ph - 18;
+    const q = P.q.map(r => r[j5]), a = P.a.map(r => r[j5]);
+    const all = panels.flatMap(([, Q]) => Q.q.map(r => r[j5]).concat(Q.a.map(r => r[j5])));
+    let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo) * 0.08 + 1e-3; lo -= pad; hi += pad;
+    const X = i => L + (w - L - R) * i / (q.length - 1), Y = v => y1 - (y1 - y0 - 14) * (v - lo) / (hi - lo);
+    txt(ctx, lab, L, y0 + 8, { font: `11px ${MONO}`, color: k ? C.gold : C.fg });
+    ctx.strokeStyle = C.rule; ctx.lineWidth = 1; [lo + pad, (lo + hi) / 2, hi - pad].forEach(v => { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); txt(ctx, v.toFixed(2), L - 6, Y(v) + 4, { align: 'right', font: `10px ${MONO}` }); });
+    ctx.fillStyle = k ? 'rgba(252,98,85,0.22)' : 'rgba(255,255,255,0.08)';
+    ctx.beginPath(); q.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); for (let i = a.length - 1; i >= 0; i--) ctx.lineTo(X(i), Y(a[i])); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); a.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.strokeStyle = C.blue; ctx.setLineDash([5, 4]); ctx.lineWidth = 1.6; ctx.stroke(); ctx.setLineDash([]);
+    ctx.beginPath(); q.forEach((v, i) => i ? ctx.lineTo(X(i), Y(v)) : ctx.moveTo(X(i), Y(v))); ctx.strokeStyle = C.fg; ctx.lineWidth = 1.4; ctx.stroke();
+    const rms = Math.sqrt(q.reduce((s, v, i) => s + (v - a[i]) ** 2, 0) / q.length);
+    txt(ctx, `rms |q − a| ${(rms * 180 / Math.PI).toFixed(2)}°`, w - R, y0 + 8, { align: 'right', font: `11px ${MONO}`, color: k ? C.red : C.dim });
+  });
+  txt(ctx, 'step →', w - R, h - 4, { align: 'right', font: `10px ${MONO}` }); txt(ctx, 'rad', 8, 30, { font: `10px ${MONO}` });
+};
+
+// ================= 6. chunking
+const CH = D.chunk; const s6t = mk('c6t', 7, 3.6), s6 = mk('c6', 1.25, 1.1);
+const pos6 = []; { let c = -1; CH.keep.forEach((k, i) => { if (k) c++; pos6.push(c); }); }
+const kept = CH.keep.map((k, i) => k ? i : -1).filter(i => i >= 0);
+const thumbSteps = Object.keys(CH.thumbs).map(Number).sort((a, b) => a - b).filter(s => CH.keep[s]);
+const r6 = document.getElementById('t6-r'); r6.max = thumbSteps.length - 1; let k6 = Math.min(30, thumbSteps.length - 1);
+const jointCols = ['#58c4dd', '#83c167', '#5cd0b3', '#b189e8', '#fc6255', '#f0ac5f', '#e8e6e1'];
+function sample(t) {
+  const ci = pos6[t], T = kept.length;
+  const obsIdx = [Math.max(ci - 1, 0), ci].map(c => kept[c]);
+  const actIdx = Array.from({ length: CH.H }, (_, k) => kept[Math.min(ci + k, T - 1)]);
+  const q0 = CH.q[t];
+  return { obsIdx, actIdx, d: actIdx.map(s => CH.a[s].slice(0, 7).map((v, j) => v - q0[j])), g: actIdx.map(s => CH.a[s][7]) };
+}
+s6t.draw = () => {
+  const { ctx, w, h } = s6t; clear(s6t); const n = CH.n, L = 12, R = 12, X = s => L + (w - L - R) * s / n;
+  const t = thumbSteps[k6], S = sample(t);
+  const yb = h * 0.34, bh = h * 0.2;
+  ctx.fillStyle = 'rgba(131,193,103,0.35)'; ctx.fillRect(X(0), yb, X(n) - X(0), bh);
+  ctx.fillStyle = C.red; CH.keep.forEach((k, i) => { if (!k) ctx.fillRect(X(i), yb - 3, Math.max(1, X(i + 1) - X(i)), bh + 6); });
+  ctx.fillStyle = C.dim; CH.idx.forEach(i => ctx.fillRect(X(i), yb + bh + 4, 1, 4));
+  thumbSteps.forEach(i => ctx.fillRect(X(i), yb + bh + 4, 1.5, 9));
+  // chunk + obs window
+  const a0 = X(S.actIdx[0]), a8 = X(S.actIdx[CH.E - 1] + 1), a16 = X(S.actIdx[CH.H - 1] + 1);
+  ctx.fillStyle = 'rgba(88,196,221,0.35)'; ctx.fillRect(a0, yb - 12, Math.max(2, a16 - a0), bh + 24);
+  ctx.fillStyle = 'rgba(240,195,92,0.6)'; ctx.fillRect(a0, yb - 12, Math.max(2, a8 - a0), 6);
+  ctx.strokeStyle = C.fg; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.moveTo(X(t), yb - 16); ctx.lineTo(X(t), yb + bh + 16); ctx.stroke();
+  txt(ctx, `t = ${t}`, X(t), yb - 20, { align: X(t) > w - 80 ? 'right' : 'left', color: C.fg, font: `11px ${MONO}` });
+  txt(ctx, `kept ${kept.length}`, L, h - 8, { color: C.green, font: `10px ${MONO}` });
+  txt(ctx, `idle, dropped ${n - kept.length}`, L + 90, h - 8, { color: C.red, font: `10px ${MONO}` });
+  txt(ctx, `rendered every 4 (${CH.idx.length})`, L + 230, h - 8, { font: `10px ${MONO}` });
+  if (w > 640) txt(ctx, 'chunk: 16 actions, first 8 executed', w - R, h - 8, { align: 'right', color: C.blue, font: `10px ${MONO}` });
+  s6t.X = X; s6t.L = L; s6t.R = R;
+};
+s6.draw = () => {
+  const { ctx, w, h } = s6; clear(s6); const t = thumbSteps[k6], S = sample(t);
+  const L = 50, R = 12, T0 = 30, gh = 34, B = h - gh - 34;
+  const all = S.d.flat(); let m = Math.max(0.02, ...all.map(Math.abs)) * 1.1;
+  const X = k => L + (w - L - R) * k / (CH.H - 1), Y = v => (T0 + B) / 2 - (B - T0) / 2 * v / m;
+  txt(ctx, 'action chunk  a(t+k) − q(t)', L, 18, { color: C.fg, font: `12px ${MONO}` });
+  ctx.fillStyle = 'rgba(240,195,92,0.08)'; ctx.fillRect(X(0) - 4, T0, X(CH.E - 1) - X(0) + 8, B - T0);
+  txt(ctx, 'executed', X(0), B - 6, { color: C.gold, font: `10px ${MONO}` });
+  ctx.strokeStyle = C.rule; ctx.lineWidth = 1; [-m / 1.1, 0, m / 1.1].forEach(v => { ctx.beginPath(); ctx.moveTo(L, Y(v)); ctx.lineTo(w - R, Y(v)); ctx.stroke(); txt(ctx, (v * 180 / Math.PI).toFixed(1) + '°', L - 6, Y(v) + 4, { align: 'right', font: `10px ${MONO}` }); });
+  for (let j = 0; j < 7; j++) { ctx.beginPath(); S.d.forEach((r, k) => k ? ctx.lineTo(X(k), Y(r[j])) : ctx.moveTo(X(k), Y(r[j]))); ctx.strokeStyle = jointCols[j]; ctx.lineWidth = 1.6; ctx.stroke(); S.d.forEach((r, k) => dot(ctx, X(k), Y(r[j]), k < CH.E ? 2 : 1.3, jointCols[j])); }
+  const gy = h - gh - 10; txt(ctx, 'grip', L - 6, gy + gh / 2 + 4, { align: 'right', font: `10px ${MONO}` });
+  S.g.forEach((g, k) => { ctx.fillStyle = g > 0 ? 'rgba(232,230,225,0.25)' : g < 0 ? C.violet : C.rule; ctx.fillRect(X(k) - (w - L - R) / (CH.H - 1) / 2 + 1, gy + 6, (w - L - R) / (CH.H - 1) - 2, gh - 12); });
+  txt(ctx, 'k = 0', X(0), h - 4, { align: 'center', font: `10px ${MONO}` }); txt(ctx, '15', X(15), h - 4, { align: 'center', font: `10px ${MONO}` });
+  txt(ctx, 'violet = close', w - R, gy + 2, { align: 'right', color: C.violet, font: `10px ${MONO}` });
+};
+function set6(k) {
+  k6 = clamp(k, 0, thumbSteps.length - 1); r6.value = k6; const t = thumbSteps[k6];
+  document.getElementById('i6f').src = CH.thumbs[t].front; document.getElementById('i6w').src = CH.thumbs[t].wrist;
+  const S = sample(t); document.getElementById('t6-ro').textContent = `t = ${t} · obs steps ${S.obsIdx.join(', ')} · actions ${S.actIdx[0]}…${S.actIdx[CH.H - 1]}`;
+  s6.draw(); s6t.draw();
+}
+r6.oninput = () => set6(+r6.value);
+const scrub6 = e => { const r = s6t.c.getBoundingClientRect(); const s = (e.clientX - r.left - s6t.L) / (s6t.w - s6t.L - s6t.R) * CH.n; let best = 0; thumbSteps.forEach((v, i) => { if (Math.abs(v - s) < Math.abs(thumbSteps[best] - s)) best = i; }); set6(best); };
+s6t.c.addEventListener('pointerdown', e => { s6t.c.setPointerCapture(e.pointerId); scrub6(e); });
+s6t.c.addEventListener('pointermove', e => { if (e.buttons) scrub6(e); });
+let acc6 = 0; player(document.getElementById('t6-play'), dt => { acc6 += dt * 4; const k = Math.floor(acc6); acc6 -= k; if (k6 + k >= thumbSteps.length) { set6(0); return false; } set6(k6 + k); });
+
+if (!reduce) { let t0 = null; const io = new IntersectionObserver(es => { if (es[0].isIntersecting && t0 === null) { t0 = 0; document.getElementById('t2-play').click(); io.disconnect(); } }, { threshold: .4 }); io.observe(s2.c); }
+document.fonts && document.fonts.ready.then(() => scenes.forEach(s => s.draw()));
+scenes.forEach(s => s.fit());
+set1(i1); set6(k6); load4(run4);
+})();
+</script>

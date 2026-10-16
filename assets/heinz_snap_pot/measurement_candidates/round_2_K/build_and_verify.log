@@ -1,0 +1,94 @@
+{
+  "source": "Gitignore-but-important/recon/beans_fuse_K/object.ply",
+  "geometry": {
+    "height_mm": 63.5,
+    "body_top_long_mm": 80,
+    "body_top_short_mm": 55,
+    "base_long_mm": 68,
+    "base_short_mm": 48,
+    "base_corner_radius_mm": 8.728831937556743,
+    "body_top_corner_radius_mm": 13.749999999999998,
+    "rim_long_mm": 95,
+    "rim_short_mm": 74,
+    "rim_corner_radius_mm": 14.8,
+    "rim_thickness_mm": 2.35,
+    "lid_thickness_mm": 0.15,
+    "lid_inset_mm": 1.0,
+    "visual_corner_segments": 24,
+    "collision_corner_segments": 12,
+    "top_assembly_thickness_mm": 2.5
+  }
+}
+Prepared raw aligned cloud, source palette and cameras: assets/heinz_snap_pot/measurement_candidates/round_2_K
+INFO Draco mesh compression is available, use library at /tmp/blender-4.5.9-linux-x64/4.5/scripts/addons_core/io_scene_gltf2/libextern_draco.so
+16:44:20 | INFO: Starting glTF 2.0 export
+16:44:20 | INFO: Extracting primitive: heinz_snap_pot_visual
+16:44:20 | INFO: Primitives created: 2
+16:44:20 | INFO: Finished glTF 2.0 export in 0.010927438735961914 s
+
+Info: Saved as "snap_pot.blend"
+SNAP_POT_BUILD_COMPLETE /home/hanszhu/Research/VLA/Humanoid-Internship-Challenge/assets/heinz_snap_pot/measurement_candidates/round_2_K
+Blender 4.5.9 LTS (hash 8bf95cbd38d1 built 2026-04-21 01:31:15)
+
+Blender quit
+Dimension                    Model mm Export mm Delta mm   Independent ruler check
+height_mm                      63.50      63.50    0.0000  APPROXIMATE_ONLY
+body_top_long_mm               80.00      80.00   -0.0000  APPROXIMATE_ONLY
+body_top_short_mm              55.00      55.00   -0.0000  APPROXIMATE_ONLY
+rim_long_mm                    95.00      95.00   -0.0000  APPROXIMATE_ONLY
+rim_short_mm                   74.00      74.00    0.0000  APPROXIMATE_ONLY
+base_long_mm                   68.00      68.00    0.0000  APPROXIMATE_ONLY
+base_short_mm                  48.00      48.00    0.0000  APPROXIMATE_ONLY
+top_assembly_thickness_mm       2.50       2.50    0.0000  APPROXIMATE_ONLY
+{
+  "status": "NOT_FULLY_VERIFIED",
+  "structural_pass": true,
+  "chamfer": {
+    "mean_mm": 4.68411082862492,
+    "p95_mm": 12.725070718365684,
+    "definition": "Unsquared Euclidean distance; equal 0.5 weight per direction, p95 of this equally weighted mixture.",
+    "cloud_to_mesh_method": "Exact point-to-exported-triangle closest distance; every original finite point; no trimming.",
+    "mesh_to_cloud_method": "200000 area-uniform exterior mesh samples, fixed seed 20261014, nearest raw cloud point.",
+    "point_count": 4089,
+    "surface_sample_count": 200000
+  },
+  "directional": {
+    "cloud_to_mesh": {
+      "count": 4089,
+      "mean_mm": 4.738021410002908,
+      "p95_mm": 15.639362674757288,
+      "max_mm": 23.931523222222065,
+      "over_5mm_count": 1420,
+      "over_5mm_fraction": 0.34727317192467594
+    },
+    "mesh_to_cloud": {
+      "count": 200000,
+      "mean_mm": 4.630200247246932,
+      "p95_mm": 10.386958021483887,
+      "max_mm": 18.423967345647966,
+      "over_5mm_count": 80290,
+      "over_5mm_fraction": 0.40145
+    }
+  },
+  "coverage_and_outliers": {
+    "mesh_base_to_cloud": {
+      "count": 23270,
+      "mean_mm": 8.544289351288523,
+      "p95_mm": 14.35729501561861,
+      "max_mm": 18.423967345647966,
+      "over_5mm_count": 23245,
+      "over_5mm_fraction": 0.9989256553502364
+    },
+    "mesh_without_base_to_cloud": {
+      "count": 176730,
+      "mean_mm": 4.114833000876492,
+      "p95_mm": 9.332375458937918,
+      "max_mm": 15.852448789229221,
+      "over_5mm_count": 57045,
+      "over_5mm_fraction": 0.3227805126464098
+    },
+    "min_observed_cloud_z_mm": 4.930368182658906,
+    "points_more_than_5mm_inside_closed_model": 1420,
+    "points_more_than_5mm_outside_closed_model": 0
+  }
+}
