@@ -93,7 +93,7 @@ Used as *video*, the same takes carry exactly what the simulator cannot produce:
 door, a real pot and a real room look and move under manipulation. No action labels are
 needed to learn that -- it is what the video head of a world model learns -- and the
 measured sensitivities of the policy here (to the room, to a 7 mm band of print, to the two
-cameras disagreeing) are sensitivities a model trained on real video does not have.
+cameras disagreeing) are sensitivities a model trained on real video need not have.
 
 So the design this project should have had, and the one I would build with the time:
 
