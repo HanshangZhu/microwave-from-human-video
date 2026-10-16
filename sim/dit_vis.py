@@ -492,6 +492,9 @@ def load_model(ckpt, dev):
     return m, any(v == "views_hq" or v.startswith("views_dr") for v in c.get("views", "views").split(","))
 
 
+NOISE_SEED_OFFSET = int(os.environ.get("NOISE_SEED_OFFSET", "0"))   # eval A/A: same starts, other sampling noise
+
+
 def rollout_retry(args, tries=3):
     """rollout(), retried when Vulkan fails to come up (seen on the Jetson Thor: an occasional
     vk::createInstanceUnique ErrorIncompatibleDriver after ~100 episodes ended the whole eval)."""
@@ -543,7 +546,7 @@ def rollout(args):
     tcp_path, tcp_prev, tcp_zmax, stops, still = 0.0, None, 0.0, 0, 0
     # the grasp: every time the gripper command flips to close with the tcp within 15 cm of the pot
     closes, grip_prev = [], 1.0
-    torch.manual_seed(seed)
+    torch.manual_seed(seed + NOISE_SEED_OFFSET)          # the policy's sampling noise; starts stay the same
     x_fix = torch.randn(1, H, D_ACT, device=dev) if infer == "fixed_noise" else None
 
     def predict():

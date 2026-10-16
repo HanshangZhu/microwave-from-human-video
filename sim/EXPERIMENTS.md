@@ -1,7 +1,8 @@
 # Simulation experiments: log (last update 2026-10-16 20:40)
 
-Scripts of sections 2-6, 7d (mesh backdrop), 8b and 10 now live under `archive/` (see
-`archive/README.md`); their paths below are as they were when run.
+The DAgger, residual-RL and probe scripts of sections 4-6 and 8, the mesh backdrop of 7d, 8b's
+zero-shot script and the Newton spike of 10 now live under `archive/` (see `archive/README.md`);
+their paths below are as they were when run. `sim/bc.py` and `sim/dit.py` stay where they were.
 
 Everything after the human takes: robot demonstrations, policies, RL. One section per
 experiment, newest results last. RL is **not finished**; its sections record runs and

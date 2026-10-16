@@ -13,8 +13,8 @@ Why over the MLP of sim/bc.py: the MLP rollouts leave the demonstrations within 
 recover; longer chunks mean fewer closed-loop decisions for errors to compound over, and
 a generative model does not average different valid continuations into an invalid one.
 
-  python archive/state-policy/dit.py train --out <dir>
-  python archive/state-policy/dit.py eval  --ckpt <dir>/dit.pt --out <dir>/eval --n 20
+  python sim/dit.py train --out <dir>
+  python sim/dit.py eval  --ckpt <dir>/dit.pt --out <dir>/eval --n 20
 """
 import argparse
 import json
@@ -26,9 +26,9 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(ROOT, "sim"))
 from bc import T_MAX, load  # noqa: E402
 
 N_OBS, H, E = 2, 16, 8

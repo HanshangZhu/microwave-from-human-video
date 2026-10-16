@@ -7,8 +7,8 @@ next H joint targets as offsets from the current joint positions, and the grippe
 for each of them. At run time it is queried every E steps and the first E of its H
 actions are executed (action chunking, as in ACT), targets = current joints + offsets.
 
-  python archive/state-policy/bc.py train --data Gitignore-but-important/sim/gen --out <dir>
-  python archive/state-policy/bc.py eval  --ckpt <dir>/bc.pt --n 20 --out <dir>/eval [--jobs 10]
+  python sim/bc.py train --data Gitignore-but-important/sim/gen --out <dir>
+  python sim/bc.py eval  --ckpt <dir>/bc.pt --n 20 --out <dir>/eval [--jobs 10]
 
 Evaluation samples new pot positions in the region the generator used (seed differs from
 the generator's) and reports, per stage: door opened (> 60 deg at some point), pot
@@ -24,7 +24,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 H, E, T_MAX = 8, 4, 3000

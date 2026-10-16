@@ -8,7 +8,7 @@ from the repo root as its docstrings say. Paths inside `sim/EXPERIMENTS.md` stil
 | folder | was | numbers | why demoted |
 |---|---|---|---|
 | `2026-10-13-human-press/` | day 1 | README "What did not work" | the task (a cap press) carried no information a human could add; superseded by the microwave task |
-| `state-policy/` | `sim/bc.py`, `dit.py`, `dagger.py`, `rl_cpu.py`, `rl_residual.py`, `probe_close.py` | EXPERIMENTS 2-6, 8 | privileged-state policies, DAgger and residual RL: the test bed the camera policy (`sim/dit_vis.py`) outgrew; RL and DAgger were negative |
+| `state-policy/` | `sim/dagger.py`, `rl_cpu.py`, `rl_residual.py`, `probe_close.py` | EXPERIMENTS 4-6, 8 | DAgger and residual RL on the privileged-state policy (negative), and the premature-close probe. `sim/bc.py` and `sim/dit.py` (the state policies themselves) stay in `sim/`: `dit_vis.py` builds on their definitions |
 | `mesh-backdrop/` | `recon/kitchen_backdrop.py`, `backdrop_colours.py` | EXPERIMENTS 7d (the 81 % "scanned room") | the fused-depth mesh of the room, superseded by the Gaussian splat (`recon/gs_kitchen.py`) |
 | `newton_spike/` | `sim/newton_spike/` | EXPERIMENTS 10 | NVIDIA Newton physics check; not adopted |
 | `lingbot-va-zeroshot/` | `sim/va_zeroshot.py` | EXPERIMENTS 8b | LingBot-VA zero-shot on the task; suggestive only |
