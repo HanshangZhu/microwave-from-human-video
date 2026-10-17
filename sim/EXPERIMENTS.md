@@ -694,7 +694,17 @@ with another sampling-noise seed (`NOISE_SEED_OFFSET=1`): 101 / 128 (79 %); 128 
 from the policy's own sampling noise alone, before training-seed variance (never measured).
 Every claim in 7d-7f rests on paired differences on the same starts, which this does not
 touch; it does mean that "grey 74 vs kitchen 68" (21 / 13, p = 0.23) is inside the floor.
-Splat, both cameras, on the new starts: pending.
+Splat, both cameras, on the new starts: 81 / 128 (63 %) vs the grey floor's 100 / 128 there:
+28 / 9, p = 0.003. So the kitchen's cost is real (6 points on the first 128 starts, n.s.;
+15 on the second, significant), not noise as I had first read it.
+
+Training-run variance, first measurement: v6-long's recipe retrained from scratch on the
+demos rendered with the corrected pot (`vis_v6w_long`, views_drm{0,1}w, 240 epochs): grey
+93 / 128 (73 %), same as v6-long on the corrected pot (95; 24 / 22, p = 0.88); splatted
+kitchen 63 / 128 (49 %) against v6-long's 87 (34 / 10, p < 0.001). Same recipe, same data
+up to the lid's colour, a different run: equal on the training-like floor, 19 points apart
+in the unseen room. Robustness out of distribution is a property of the run, not only of
+the recipe; every OOD number in 7d-7f is one draw from that spread.
 
 ## 8. Human-guided robot demonstrations: the hand where it was seen (`human_paths.py`)
 

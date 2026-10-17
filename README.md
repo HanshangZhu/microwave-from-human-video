@@ -45,11 +45,12 @@ starts in both columns; success rate reached at each stage of the task:
 | door shut with the pot inside | 75 % | 69 % |
 | **task success** | **74 %** | **68 %** |
 
-Grey floor vs kitchen, paired: 21 / 13 discordant, p = 0.23. The kitchen was never a
-training scene; it costs the policy at the grasp and nothing at the door. The evaluation's
-own floor: the grey-floor run repeated with another sampling-noise seed gives 79 % on the
-same starts and 78 % on 128 new starts, so single numbers here carry about +-5 points and
-only the paired differences are read.
+Grey floor vs kitchen, paired: 21 / 13 discordant, p = 0.23 on these starts; on 128 new
+starts 78 % vs 63 %, 28 / 9, p = 0.003. The kitchen was never a training scene; it costs
+the policy 6-15 points, all at the grasp, nothing at the door. Single numbers carry about
++-5 points of sampling noise (the grey-floor run repeated: 79 % on the same starts), and a
+second training run of the same recipe on the corrected pot gives 73 % / 49 %: the kitchen
+number also moves a lot with the training run.
 
 ## Method
 
@@ -92,7 +93,7 @@ check it if you are interested. Thank you for the challenge; it was a good four 
 **What the experiments say, in short.** Steps, model size and demonstration count are not
 what limits this policy (~80 %, all n.s.); one random scene per demonstration costs ~20
 points; in the real-looking room the two cameras disagreeing cost 21 points and the room
-itself ~6 (n.s.); a 7 mm band of lid colour the asset had wrong costs 9; and wherever a
+itself 6-15; a 7 mm band of lid colour the asset had wrong costs 9; and wherever a
 scripted oracle exists, human motion used as action labels loses to it (59 % vs 88 % at
 matched demo counts). Numbers and tests: [`REPORT.md`](REPORT.md) and `sim/EXPERIMENTS.md`.
 
